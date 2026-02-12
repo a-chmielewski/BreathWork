@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Breathwork</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="screen-list" class="screen screen-active">
+    <header class="header">
+      <h1>Breathwork</h1>
+    </header>
+    <main class="main list-main">
+      <ul id="technique-list" class="technique-list" role="list"></ul>
+    </main>
+  </div>
+
+  <div id="screen-duration" class="screen">
+    <header class="header">
+      <button type="button" class="back-btn" id="duration-back" aria-label="Back">←</button>
+      <h1 id="duration-title">Duration</h1>
+    </header>
+    <main class="main duration-main">
+      <div id="duration-options" class="duration-options"></div>
+      <label class="sound-toggle">
+        <input type="checkbox" id="duration-sound" />
+        <span>Sound on phase change</span>
+      </label>
+      <button type="button" class="btn btn-primary" id="duration-start">Start</button>
+    </main>
+  </div>
+
+  <div id="screen-exercise" class="screen">
+    <header class="header exercise-header">
+      <button type="button" class="back-btn" id="exercise-stop" aria-label="Stop">✕</button>
+      <span id="exercise-round-info" class="round-info" aria-live="polite"></span>
+      <button type="button" class="pause-btn" id="exercise-pause" aria-label="Pause">⏸</button>
+    </header>
+    <main class="main exercise-main">
+      <div class="circle-wrap">
+        <svg class="circle-svg" viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="circle-bg" cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="4" />
+          <circle class="circle-progress" cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="339.292" stroke-dashoffset="339.292" transform="rotate(-90 60 60)" />
+        </svg>
+        <div class="circle-center">
+          <div id="exercise-phase-label" class="phase-label" aria-live="polite">Inhale</div>
+          <div id="exercise-countdown" class="countdown" aria-live="polite">4</div>
+        </div>
+      </div>
+      <div id="exercise-tap-hold" class="tap-hold hidden">
+        <p class="tap-hold-text">Hold your breath. Tap when you need to breathe.</p>
+        <button type="button" class="btn btn-breathe" id="exercise-need-breathe">I need to breathe</button>
+      </div>
+      <div id="exercise-paused" class="paused-overlay hidden">
+        <p>Paused</p>
+        <button type="button" class="btn btn-primary" id="exercise-resume">Resume</button>
+        <button type="button" class="btn btn-secondary" id="exercise-end-session">End session</button>
+      </div>
+    </main>
+  </div>
+
+  <div id="screen-completion" class="screen">
+    <main class="main completion-main">
+      <h2>Done</h2>
+      <p id="completion-message" class="completion-message">Session complete.</p>
+      <div class="completion-actions">
+        <button type="button" class="btn btn-primary" id="completion-again">Again</button>
+        <button type="button" class="btn btn-secondary" id="completion-list">Back to list</button>
+      </div>
+    </main>
+  </div>
+
+  <script src="techniques.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    }
+  </script>
+</body>
+</html>
