@@ -79,6 +79,7 @@
     durationStart: document.getElementById('duration-start'),
     durationSound: document.getElementById('duration-sound'),
     exerciseStop: document.getElementById('exercise-stop'),
+    exerciseSessionLeft: document.getElementById('exercise-session-left'),
     exerciseRoundInfo: document.getElementById('exercise-round-info'),
     exercisePause: document.getElementById('exercise-pause'),
     exercisePhaseLabel: document.getElementById('exercise-phase-label'),
@@ -329,6 +330,24 @@
       return 'exhale';
     }
 
+    function formatMinutesSeconds(remainingMs) {
+      const totalSec = Math.max(0, Math.floor(remainingMs / 1000));
+      const m = Math.floor(totalSec / 60);
+      const s = totalSec % 60;
+      return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    function updateSessionLeft(elapsed, roundInfo) {
+      const el = elements.exerciseSessionLeft;
+      if (!el) return;
+      if (isTimeBased) {
+        const remainingMs = Math.max(0, durationMs - elapsed);
+        el.textContent = formatMinutesSeconds(remainingMs) + ' left';
+      } else {
+        el.textContent = roundInfo != null ? 'Round ' + (roundInfo.round + 1) + ' of ' + roundInfo.totalRounds : '';
+      }
+    }
+
     function tick() {
       if (ended) return;
       const now = Date.now();
@@ -344,6 +363,7 @@
           endSession();
           return;
         }
+        updateSessionLeft(elapsed, info);
         const p = info.phase;
         if (p.tapHold) {
           setPhaseUI(info, null);
@@ -368,6 +388,7 @@
           endSession();
           return;
         }
+        updateSessionLeft(elapsed, info.totalRounds != null ? { round: info.round, totalRounds: info.totalRounds } : null);
         setPhaseUI(info, (info.phaseDurationMs - info.elapsedInPhaseMs) / 1000);
         updateBarAndCountdown(info);
       }
@@ -387,10 +408,12 @@
 
     if (useTapHold) {
       const info = getCurrentPhaseTap(Date.now());
+      updateSessionLeft(0, info);
       setPhaseUI(info, info ? (info.phaseDurationMs - info.elapsedInPhaseMs) / 1000 : null);
       if (info && !info.phase.tapHold) updateBarAndCountdown(info);
     } else {
       const info = getCurrentPhaseFromElapsed(0);
+      updateSessionLeft(0, info && info.totalRounds != null ? { round: info.round, totalRounds: info.totalRounds } : null);
       setPhaseUI(info, info ? info.phaseDurationMs / 1000 : null);
       updateBarAndCountdown(info);
     }

@@ -7,6 +7,7 @@
   --text-muted: #a3a3a3;
   --accent: #7dd3c0;
   --accent-hover: #5eb8a8;
+  --accent-exercise: #e07c3a;
   --radius: 12px;
   --touch-min: 44px;
   --font-sans: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
@@ -72,6 +73,12 @@ body {
 
 .header .back-btn {
   left: 0.5rem;
+}
+
+.exercise-header .back-btn {
+  font-size: 1.75rem;
+  min-width: 52px;
+  min-height: 52px;
 }
 
 .header .pause-btn {
@@ -239,11 +246,18 @@ body {
   position: relative;
 }
 
+.session-left {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .circle-wrap {
   position: relative;
   width: min(85vw, 320px);
   height: min(85vw, 320px);
-  color: var(--accent);
+  color: var(--accent-exercise);
 }
 
 .circle-svg {
