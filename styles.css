@@ -331,6 +331,51 @@ body {
   outline: none;
 }
 
+.get-ready-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.get-ready-text {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+}
+
+.get-ready-countdown {
+  font-size: 4rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-exercise);
+  font-weight: 600;
+}
+
+.get-ready-hint {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.get-ready-skip {
+  margin-top: 0.5rem;
+}
+
+.exercise-technique-name {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  max-width: 45%;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .paused-overlay {
   position: absolute;
   inset: 0;

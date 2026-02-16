@@ -39,6 +39,7 @@
   <div id="screen-exercise" class="screen">
     <header class="header exercise-header">
       <button type="button" class="back-btn" id="exercise-stop" aria-label="Stop">✕</button>
+      <span id="exercise-technique-name" class="exercise-technique-name" aria-live="polite"></span>
       <span id="exercise-round-info" class="round-info" aria-live="polite"></span>
       <button type="button" class="pause-btn" id="exercise-pause" aria-label="Pause">⏸</button>
     </header>
@@ -57,6 +58,12 @@
       <div id="exercise-tap-hold" class="tap-hold hidden">
         <p class="tap-hold-text">Hold your breath. Tap when you need to breathe.</p>
         <button type="button" class="btn btn-breathe" id="exercise-need-breathe">I need to breathe</button>
+      </div>
+      <div id="exercise-get-ready" class="get-ready-overlay hidden">
+        <p class="get-ready-text">Get ready</p>
+        <div id="exercise-get-ready-countdown" class="get-ready-countdown" aria-live="polite">3</div>
+        <p id="exercise-get-ready-hint" class="get-ready-hint"></p>
+        <button type="button" class="btn btn-secondary get-ready-skip" id="exercise-get-ready-skip">Skip</button>
       </div>
       <div id="exercise-paused" class="paused-overlay hidden">
         <p>Paused</p>

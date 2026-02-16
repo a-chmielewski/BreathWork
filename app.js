@@ -1,7 +1,10 @@
 (function () {
   const DURATION_MINUTES_OPTIONS = [5, 10, 15];
+  const GET_READY_SECONDS = 2;
   const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 54;
   const STORAGE_KEYS = { lastTechId: 'breathwork_last_tech', lastMins: 'breathwork_last_mins', lastRounds: 'breathwork_last_rounds', sound: 'breathwork_sound' };
+
+  let getReadyIntervalId = null;
 
   let state = {
     currentTechnique: null,
@@ -79,6 +82,11 @@
     durationStart: document.getElementById('duration-start'),
     durationSound: document.getElementById('duration-sound'),
     exerciseStop: document.getElementById('exercise-stop'),
+    exerciseGetReady: document.getElementById('exercise-get-ready'),
+    exerciseGetReadyCountdown: document.getElementById('exercise-get-ready-countdown'),
+    exerciseGetReadyHint: document.getElementById('exercise-get-ready-hint'),
+    exerciseGetReadySkip: document.getElementById('exercise-get-ready-skip'),
+    exerciseTechniqueName: document.getElementById('exercise-technique-name'),
     exerciseSessionLeft: document.getElementById('exercise-session-left'),
     exerciseRoundInfo: document.getElementById('exercise-round-info'),
     exercisePause: document.getElementById('exercise-pause'),
@@ -191,7 +199,49 @@
     if (tech.durationMode === 'rounds' && !state.durationRounds) return;
     saveState();
     showScreen('screen-exercise');
-    runExercise(tech);
+    if (elements.exerciseTechniqueName) elements.exerciseTechniqueName.textContent = tech.name;
+    if (elements.exerciseSessionLeft) elements.exerciseSessionLeft.textContent = '';
+    if (elements.exerciseRoundInfo) elements.exerciseRoundInfo.textContent = '';
+    if (elements.exercisePhaseLabel) elements.exercisePhaseLabel.textContent = '';
+    if (elements.exerciseCountdown) elements.exerciseCountdown.textContent = '';
+
+    var firstPhaseLabel = tech.phases && tech.phases[0] ? (tech.phases[0].label || tech.phases[0].type) : 'Inhale';
+    if (elements.exerciseGetReadyHint) elements.exerciseGetReadyHint.textContent = 'Starting with: ' + firstPhaseLabel;
+    if (elements.exerciseGetReadyCountdown) elements.exerciseGetReadyCountdown.textContent = String(GET_READY_SECONDS);
+    if (elements.exerciseGetReady) elements.exerciseGetReady.classList.remove('hidden');
+
+    var countdown = GET_READY_SECONDS;
+    function onGetReadyTick() {
+      countdown--;
+      if (elements.exerciseGetReadyCountdown) elements.exerciseGetReadyCountdown.textContent = countdown > 0 ? String(countdown) : '';
+      if (countdown <= 0) {
+        clearInterval(getReadyIntervalId);
+        getReadyIntervalId = null;
+        if (elements.exerciseGetReady) elements.exerciseGetReady.classList.add('hidden');
+        playPhaseSound();
+        runExercise(tech);
+      }
+    }
+    getReadyIntervalId = setInterval(onGetReadyTick, 1000);
+
+    elements.exerciseStop.onclick = function () {
+      if (getReadyIntervalId != null) {
+        clearInterval(getReadyIntervalId);
+        getReadyIntervalId = null;
+      }
+      if (elements.exerciseGetReady) elements.exerciseGetReady.classList.add('hidden');
+      showScreen('screen-list');
+    };
+
+    elements.exerciseGetReadySkip.onclick = function () {
+      if (getReadyIntervalId != null) {
+        clearInterval(getReadyIntervalId);
+        getReadyIntervalId = null;
+      }
+      if (elements.exerciseGetReady) elements.exerciseGetReady.classList.add('hidden');
+      playPhaseSound();
+      runExercise(tech);
+    };
   }
 
   function runExercise(tech) {
