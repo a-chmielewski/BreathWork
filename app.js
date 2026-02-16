@@ -1,6 +1,6 @@
 (function () {
   const DURATION_MINUTES_OPTIONS = [5, 10, 15];
-  const GET_READY_SECONDS = 2;
+  const GET_READY_SECONDS = 3;
   const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 54;
   const STORAGE_KEYS = { lastTechId: 'breathwork_last_tech', lastMins: 'breathwork_last_mins', lastRounds: 'breathwork_last_rounds', sound: 'breathwork_sound' };
 
@@ -212,6 +212,10 @@
     if (!tech) return;
     if (tech.durationMode === 'time' && !state.durationMinutes) return;
     if (tech.durationMode === 'rounds' && !state.durationRounds) return;
+    if (getReadyIntervalId != null) {
+      clearInterval(getReadyIntervalId);
+      getReadyIntervalId = null;
+    }
     saveState();
     showScreen('screen-exercise');
     if (elements.exerciseTechniqueName) elements.exerciseTechniqueName.textContent = tech.name;
@@ -223,21 +227,27 @@
     var firstPhaseLabel = tech.phases && tech.phases[0] ? (tech.phases[0].label || tech.phases[0].type) : 'Inhale';
     if (elements.exerciseGetReadyHint) elements.exerciseGetReadyHint.textContent = 'Starting with: ' + firstPhaseLabel;
     if (elements.exerciseGetReadyCountdown) elements.exerciseGetReadyCountdown.textContent = String(GET_READY_SECONDS);
-    if (elements.exerciseGetReady) elements.exerciseGetReady.classList.remove('hidden');
 
-    var countdown = GET_READY_SECONDS;
-    function onGetReadyTick() {
-      countdown--;
-      if (elements.exerciseGetReadyCountdown) elements.exerciseGetReadyCountdown.textContent = countdown > 0 ? String(countdown) : '';
-      if (countdown <= 0) {
+    requestAnimationFrame(function () {
+      if (getReadyIntervalId != null) {
         clearInterval(getReadyIntervalId);
         getReadyIntervalId = null;
-        if (elements.exerciseGetReady) elements.exerciseGetReady.classList.add('hidden');
-        playPhaseSound();
-        runExercise(tech);
       }
-    }
-    getReadyIntervalId = setInterval(onGetReadyTick, 1000);
+      if (elements.exerciseGetReady) elements.exerciseGetReady.classList.remove('hidden');
+      var countdown = GET_READY_SECONDS;
+      function onGetReadyTick() {
+        countdown--;
+        if (elements.exerciseGetReadyCountdown) elements.exerciseGetReadyCountdown.textContent = countdown > 0 ? String(countdown) : '';
+        if (countdown <= 0) {
+          clearInterval(getReadyIntervalId);
+          getReadyIntervalId = null;
+          if (elements.exerciseGetReady) elements.exerciseGetReady.classList.add('hidden');
+          playPhaseSound();
+          runExercise(tech);
+        }
+      }
+      getReadyIntervalId = setInterval(onGetReadyTick, 1000);
+    });
 
     elements.exerciseGetReadySkip.onclick = function () {
       if (getReadyIntervalId != null) {
