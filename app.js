@@ -5,6 +5,7 @@
   const STORAGE_KEYS = { lastTechId: 'breathwork_last_tech', lastMins: 'breathwork_last_mins', lastRounds: 'breathwork_last_rounds', sound: 'breathwork_sound' };
 
   let getReadyIntervalId = null;
+  let exerciseEndCallback = null;
 
   let state = {
     currentTechnique: null,
@@ -76,6 +77,7 @@
 
   const elements = {
     techniqueList: document.getElementById('technique-list'),
+    reloadApp: document.getElementById('reload-app'),
     durationBack: document.getElementById('duration-back'),
     durationTitle: document.getElementById('duration-title'),
     durationOptions: document.getElementById('duration-options'),
@@ -109,6 +111,19 @@
     if (!screen) return;
     Object.values(screens).forEach(s => s.classList.remove('screen-active'));
     screen.classList.add('screen-active');
+  }
+
+  function exitExerciseScreen() {
+    if (getReadyIntervalId != null) {
+      clearInterval(getReadyIntervalId);
+      getReadyIntervalId = null;
+    }
+    if (elements.exerciseGetReady) elements.exerciseGetReady.classList.add('hidden');
+    if (exerciseEndCallback) {
+      exerciseEndCallback();
+      exerciseEndCallback = null;
+    }
+    showScreen('screen-list');
   }
 
   function renderTechniqueList() {
@@ -224,15 +239,6 @@
     }
     getReadyIntervalId = setInterval(onGetReadyTick, 1000);
 
-    elements.exerciseStop.onclick = function () {
-      if (getReadyIntervalId != null) {
-        clearInterval(getReadyIntervalId);
-        getReadyIntervalId = null;
-      }
-      if (elements.exerciseGetReady) elements.exerciseGetReady.classList.add('hidden');
-      showScreen('screen-list');
-    };
-
     elements.exerciseGetReadySkip.onclick = function () {
       if (getReadyIntervalId != null) {
         clearInterval(getReadyIntervalId);
@@ -245,6 +251,10 @@
   }
 
   function runExercise(tech) {
+    // Only entry from startSession after get-ready countdown or Skip.
+    if (elements.exerciseGetReady && !elements.exerciseGetReady.classList.contains('hidden')) {
+      return;
+    }
     const isTimeBased = tech.durationMode === 'time';
     const durationMs = isTimeBased ? state.durationMinutes * 60 * 1000 : null;
     const totalRounds = !isTimeBased ? state.durationRounds : null;
@@ -448,6 +458,7 @@
 
     function endSession() {
       ended = true;
+      exerciseEndCallback = null;
       if (animationFrameId != null) cancelAnimationFrame(animationFrameId);
       elements.completionMessage.textContent = 'Session complete.';
       showScreen('screen-completion');
@@ -498,13 +509,13 @@
     elements.exerciseEndSession.onclick = function () {
       ended = true;
       if (animationFrameId != null) cancelAnimationFrame(animationFrameId);
+      exerciseEndCallback = null;
       showScreen('screen-list');
     };
 
-    elements.exerciseStop.onclick = function () {
+    exerciseEndCallback = function () {
       ended = true;
       if (animationFrameId != null) cancelAnimationFrame(animationFrameId);
-      showScreen('screen-list');
     };
 
     animationFrameId = requestAnimationFrame(tick);
@@ -514,6 +525,22 @@
   elements.durationStart.addEventListener('click', startSession);
   elements.completionAgain.addEventListener('click', () => showScreen('screen-duration'));
   elements.completionList.addEventListener('click', () => showScreen('screen-list'));
+
+  if (elements.exerciseStop) {
+    elements.exerciseStop.addEventListener('click', function () {
+      exitExerciseScreen();
+    });
+    elements.exerciseStop.addEventListener('touchend', function (e) {
+      e.preventDefault();
+      exitExerciseScreen();
+    });
+  }
+
+  if (elements.reloadApp) {
+    elements.reloadApp.addEventListener('click', function () {
+      location.reload();
+    });
+  }
 
   loadState();
   renderTechniqueList();

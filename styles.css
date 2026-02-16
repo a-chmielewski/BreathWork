@@ -75,6 +75,11 @@ body {
   left: 0.5rem;
 }
 
+.exercise-header {
+  position: relative;
+  z-index: 10;
+}
+
 .exercise-header .back-btn {
   font-size: 1.75rem;
   min-width: 52px;
@@ -116,6 +121,23 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.reload-app-btn {
+  margin-top: 1.5rem;
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  align-self: center;
+}
+
+.reload-app-btn:hover,
+.reload-app-btn:focus-visible {
+  color: var(--text);
+  outline: none;
 }
 
 .technique-card {
