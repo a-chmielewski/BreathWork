@@ -28,7 +28,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.4;
   min-height: 100dvh;
   min-height: 100vh;
@@ -82,8 +82,13 @@ body {
 
 .exercise-header .back-btn {
   font-size: 1.75rem;
-  min-width: 52px;
-  min-height: 52px;
+  min-width: 60px;
+  min-height: 60px;
+}
+
+.exercise-header .pause-btn {
+  min-width: 60px;
+  min-height: 60px;
 }
 
 .header .pause-btn {
@@ -277,8 +282,8 @@ body {
 
 .circle-wrap {
   position: relative;
-  width: min(85vw, 320px);
-  height: min(85vw, 320px);
+  width: min(85vw, 400px);
+  height: min(85vw, 400px);
   color: var(--accent-exercise);
 }
 
@@ -306,14 +311,14 @@ body {
 }
 
 .phase-label {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 600;
   text-align: center;
   max-width: 80%;
 }
 
 .countdown {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -423,6 +428,45 @@ body {
   display: none !important;
 }
 
+/* Update banner */
+.update-banner {
+  position: fixed;
+  top: max(env(safe-area-inset-top), 0);
+  left: 0;
+  right: 0;
+  background: var(--accent);
+  color: var(--bg);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.update-banner p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.update-banner button {
+  padding: 0.5rem 1rem;
+  background: var(--bg);
+  color: var(--accent);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.update-banner button:hover {
+  background: var(--bg-elevated);
+}
+
 /* Completion screen */
 .completion-main {
   align-items: center;
@@ -451,4 +495,32 @@ body {
 
 .completion-actions .btn {
   width: 100%;
+}
+
+/* Landscape orientation support */
+@media (orientation: landscape) {
+  .circle-wrap {
+    width: min(60vh, 350px);
+    height: min(60vh, 350px);
+  }
+
+  .exercise-main {
+    padding: 0.5rem 1rem;
+  }
+
+  .session-left {
+    margin-bottom: 0.5rem;
+  }
+
+  .get-ready-countdown {
+    font-size: 3rem;
+  }
+
+  .phase-label {
+    font-size: 1.25rem;
+  }
+
+  .countdown {
+    font-size: 2rem;
+  }
 }

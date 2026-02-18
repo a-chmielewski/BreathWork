@@ -66,6 +66,11 @@
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.08);
     } catch (_) {}
+    try {
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+    } catch (_) {}
   }
 
   const screens = {
@@ -554,4 +559,14 @@
 
   loadState();
   renderTechniqueList();
+
+  setTimeout(function () {
+    const loader = document.getElementById('app-loader');
+    if (loader) {
+      loader.classList.add('loaded');
+      setTimeout(function () {
+        if (loader.parentNode) loader.parentNode.removeChild(loader);
+      }, 300);
+    }
+  }, 100);
 })();

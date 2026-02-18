@@ -1,5 +1,5 @@
-const CACHE_NAME = 'breathwork-v2';
-const ASSETS = ['/', 'index.html', 'styles.css', 'app.js', 'techniques.js', 'manifest.json', 'icon.svg'];
+const CACHE_NAME = 'breathwork-v3';
+const ASSETS = ['/', 'index.html', 'styles.css', 'app.js', 'techniques.js', 'manifest.json', 'icon.svg', 'icon-180.png', 'icon-192.png', 'icon-512.png', 'icon-512-maskable.png'];
 
 self.addEventListener('install', function (event) {
   event.waitUntil(
@@ -19,6 +19,12 @@ self.addEventListener('activate', function (event) {
   }).then(function () {
     return self.clients.claim();
   }));
+});
+
+self.addEventListener('message', function (event) {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', function (event) {
