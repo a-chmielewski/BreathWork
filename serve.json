@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/BreathWork", "destination": "/index.html" },
+    { "source": "/BreathWork/", "destination": "/index.html" },
+    { "source": "/BreathWork/(.*)", "destination": "/$1" }
+  ]
+}

@@ -13,6 +13,14 @@ The app works **offline** on your phone **after** it has been loaded over a **se
 
 **Python http.server on LAN only:** If you only serve the app at `http://192.168.x.x:8000` with no HTTPS, the service worker will not register on the phone, so the app will not be cached and will not work offline until you use one of the options above.
 
+## Tests
+
+```bash
+npm run check      # lint + unit + browser tests
+npm run test:all   # unit + browser only
+npm run lint       # ESLint
+```
+
 ## Run locally
 
 ```bash

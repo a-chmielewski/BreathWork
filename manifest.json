@@ -2,12 +2,20 @@
   "name": "Breathwork",
   "short_name": "Breathwork",
   "description": "Breath work exercises with guided timing",
-  "start_url": "/",
+  "id": "breathwork-app",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#0a0a0a",
   "orientation": "portrait",
   "icons": [
+    {
+      "src": "icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "icon-192.png",
       "sizes": "192x192",
