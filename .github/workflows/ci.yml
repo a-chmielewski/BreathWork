@@ -15,4 +15,6 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - name: Install Playwright WebKit system dependencies
+        run: npx playwright install --with-deps webkit
       - run: npm run check
