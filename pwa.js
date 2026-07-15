@@ -142,9 +142,26 @@
     markOfflineReady(false);
   }
 
+  function syncUpdateBannerLayout() {
+    var banner = $('update-banner');
+    var visible = banner && !banner.classList.contains('hidden');
+    document.body.classList.toggle('has-update-banner', visible);
+    if (!visible || !banner) {
+      document.documentElement.style.removeProperty('--update-banner-offset');
+      if (banner) banner.setAttribute('aria-hidden', 'true');
+      return;
+    }
+    document.documentElement.style.setProperty(
+      '--update-banner-offset',
+      banner.offsetHeight + 'px'
+    );
+    banner.setAttribute('aria-hidden', 'false');
+  }
+
   function showUpdateBanner() {
     updateAvailable = true;
     setHidden($('update-banner'), false);
+    window.requestAnimationFrame(syncUpdateBannerLayout);
     refreshStatus();
   }
 
@@ -226,6 +243,10 @@
 
   window.addEventListener('online', refreshStatus);
   window.addEventListener('offline', refreshStatus);
+  window.addEventListener('resize', syncUpdateBannerLayout);
+  window.addEventListener('orientationchange', function () {
+    window.requestAnimationFrame(syncUpdateBannerLayout);
+  });
 
   registerUpdateButton();
   registerInstallHint();

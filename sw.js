@@ -1,4 +1,4 @@
-const APP_VERSION = '1.6.0';
+const APP_VERSION = '1.6.1';
 const CACHE_NAME = 'breathwork-' + APP_VERSION;
 
 const ASSET_PATHS = [
