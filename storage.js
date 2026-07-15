@@ -27,6 +27,7 @@
     volume: 70,
     showCountdown: true,
     theme: 'system',
+    locale: null,
     onboardingDismissed: false,
     favorites: []
   };
@@ -81,6 +82,8 @@
     });
     var allowedThemes = ['system', 'dark', 'warm', 'high-contrast'];
     if (allowedThemes.indexOf(prefs.theme) === -1) prefs.theme = 'system';
+    var allowedLocales = ['en', 'pl', null];
+    if (allowedLocales.indexOf(prefs.locale) === -1) prefs.locale = null;
     return prefs;
   }
 
@@ -181,6 +184,10 @@
     var thisWeek = history.filter(function (entry) {
       return new Date(entry.timestamp).getTime() >= weekAgo;
     }).length;
+    if (root.I18n) {
+      if (thisWeek === 0) return root.I18n.t('history.recentSaved');
+      return root.I18n.plural('history.sessionsThisWeek', thisWeek);
+    }
     if (thisWeek === 0) return 'Your recent sessions are saved here when you finish a practice.';
     if (thisWeek === 1) return '1 completed session this week.';
     return thisWeek + ' completed sessions this week.';
@@ -197,6 +204,7 @@
   }
 
   function listStoredKeys() {
+    if (root.I18n) return root.I18n.getStoredKeys();
     return [
       { key: PREFS_KEY, description: 'App preferences, favorites, and last session settings' },
       { key: HISTORY_KEY, description: 'Completed session history (technique, duration, notes)' },

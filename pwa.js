@@ -12,6 +12,11 @@
     return document.getElementById(id);
   }
 
+  function t(key, params) {
+    if (window.I18n) return window.I18n.t(key, params);
+    return key;
+  }
+
   function isStandalone() {
     return (
       window.matchMedia('(display-mode: standalone)').matches ||
@@ -57,21 +62,21 @@
     parts.push('v' + APP_VERSION);
 
     if (isStandalone()) {
-      parts.push('Installed');
+      parts.push(t('pwa.installed'));
     }
 
     if (!navigator.onLine) {
-      parts.push('Offline now');
+      parts.push(t('pwa.offlineNow'));
     }
 
     if (offlineReady) {
-      parts.push('Ready offline');
+      parts.push(t('pwa.readyOffline'));
     } else if ('serviceWorker' in navigator) {
-      parts.push('Preparing offline…');
+      parts.push(t('pwa.preparingOffline'));
     }
 
     if (updateAvailable) {
-      parts.push('Update available');
+      parts.push(t('pwa.updateAvailable'));
     }
 
     el.textContent = parts.join(' · ');
@@ -82,7 +87,7 @@
     sessionStorage.removeItem(UPDATE_NOTICE_KEY);
     var notice = $('update-notice');
     if (!notice) return;
-    notice.textContent = 'Updated to v' + APP_VERSION + '.';
+    notice.textContent = t('update.notice', { version: APP_VERSION });
     setHidden(notice, false);
     window.setTimeout(function () {
       setHidden(notice, true);
@@ -205,9 +210,18 @@
       else console.error('[pwa] service worker registration failed', err);
       var status = $('app-status-text');
       if (status) {
-        status.textContent = 'v' + APP_VERSION + ' · Offline setup failed';
+        status.textContent = 'v' + APP_VERSION + ' · ' + t('pwa.offlineSetupFailed');
       }
     }
+  }
+
+  window.refreshPwaStatus = refreshStatus;
+
+  if (window.I18n) {
+    window.I18n.onChange(function () {
+      if (window.I18n.applyHtml) window.I18n.applyHtml(document);
+      refreshStatus();
+    });
   }
 
   window.addEventListener('online', refreshStatus);

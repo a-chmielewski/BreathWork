@@ -4,25 +4,12 @@
   const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 54;
   const MIN_SESSION_MS_FOR_CONFIRM = 8000;
   const LOADER_DELAY_MS = 280;
-  const GOAL_FILTERS = [
-    { id: 'all', label: 'All' },
-    { id: 'favorites', label: 'Favorites' },
-    { id: 'calm', label: 'Calm' },
-    { id: 'sleep', label: 'Sleep' },
-    { id: 'focus', label: 'Focus' },
-    { id: 'energizing', label: 'Energizing' }
-  ];
-  const INTENSITY_FILTERS = [
-    { id: 'all', label: 'All levels' },
-    { id: 'gentle', label: 'Gentle' },
-    { id: 'moderate', label: 'Moderate' },
-    { id: 'intense', label: 'Intense' }
-  ];
-  const THEME_OPTIONS = [
-    { id: 'system', label: 'System (dark)' },
-    { id: 'dark', label: 'Dark' },
-    { id: 'warm', label: 'Warm' },
-    { id: 'high-contrast', label: 'High contrast' }
+  const GOAL_FILTER_IDS = ['all', 'favorites', 'calm', 'sleep', 'focus', 'energizing'];
+  const INTENSITY_FILTER_IDS = ['all', 'gentle', 'moderate', 'intense'];
+  const THEME_IDS = ['system', 'dark', 'warm', 'high-contrast'];
+  const LOCALE_OPTIONS = [
+    { id: 'en', labelKey: 'settings.langEn' },
+    { id: 'pl', labelKey: 'settings.langPl' }
   ];
 
   let getReadyIntervalId = null;
@@ -135,6 +122,7 @@
     historyClear: document.getElementById('history-clear'),
     settingsBack: document.getElementById('settings-back'),
     settingsPrefs: document.getElementById('settings-prefs'),
+    settingsLanguageOptions: document.getElementById('settings-language-options'),
     settingsThemeOptions: document.getElementById('settings-theme-options'),
     settingsDiagnostics: document.getElementById('settings-diagnostics'),
     settingsShowOnboarding: document.getElementById('settings-show-onboarding'),
@@ -166,8 +154,74 @@
     document.body.classList.toggle('reduced-motion-ui', e.matches);
   });
 
+  function localizeTechnique(tech) {
+    return I18n.localizeTechnique(tech);
+  }
+
+  function resolveCurrentTechnique() {
+    if (!state.currentTechnique) return null;
+    return localizeTechnique(state.currentTechnique);
+  }
+
+  function getPaceLabel(pace) {
+    if (pace === 'slow') return I18n.t('meta.paceSlow');
+    if (pace === 'moderate') return I18n.t('meta.paceModerate');
+    if (pace === 'rapid') return I18n.t('meta.paceRapid');
+    return pace;
+  }
+
+  function getLocalizedSafetyWarning(techniqueId) {
+    var safety = I18n.getSafety();
+    if (safety.techniqueWarnings && safety.techniqueWarnings[techniqueId]) {
+      return safety.techniqueWarnings[techniqueId];
+    }
+    return SAFETY.getTechniqueWarning(techniqueId);
+  }
+
+  function applyDocumentI18n() {
+    I18n.applyHtml(document);
+    document.title = I18n.t('app.title');
+  }
+
+  function refreshLocalizedUi() {
+    applyDocumentI18n();
+    renderFilterChips();
+    renderTechniqueList();
+    updateContinueShortcut();
+    if (state.currentTechnique && screens.detail.classList.contains('screen-active')) {
+      renderDetailScreen(resolveCurrentTechnique());
+    }
+    if (state.currentTechnique && screens.duration.classList.contains('screen-active')) {
+      var tech = resolveCurrentTechnique();
+      elements.durationTitle.textContent = I18n.t('duration.setupTitle', { name: tech.name });
+      renderDurationOptions(tech);
+      bindDurationPrefs();
+    }
+    if (screens.history.classList.contains('screen-active')) {
+      renderHistoryScreen();
+    }
+    if (screens.settings.classList.contains('screen-active')) {
+      bindSettingsPrefs();
+      renderLanguageOptions();
+      renderThemeOptions();
+      renderSettingsDiagnostics();
+    }
+    if (window.refreshPwaStatus) window.refreshPwaStatus();
+  }
+
+  function setLocale(locale) {
+    state.locale = locale;
+    I18n.setLocale(locale);
+    var prefs = AppStorage.getPrefs();
+    prefs.locale = locale;
+    AppStorage.savePrefs(prefs);
+    refreshLocalizedUi();
+  }
+
   function loadState() {
     const prefs = AppStorage.getPrefs();
+    I18n.init({ locale: prefs.locale });
+    state.locale = I18n.getLocale();
     state.soundEnabled = prefs.sound;
     state.hapticsEnabled = prefs.haptics;
     state.volume = prefs.volume / 100;
@@ -208,6 +262,7 @@
     prefs.volume = Math.round(state.volume * 100);
     prefs.showCountdown = state.showCountdown;
     prefs.theme = state.theme;
+    prefs.locale = state.locale;
     AppStorage.savePrefs(prefs);
   }
 
@@ -235,14 +290,14 @@
   function renderFilterChips() {
     if (elements.goalFilters) {
       elements.goalFilters.innerHTML = '';
-      GOAL_FILTERS.forEach(function (filter) {
+      GOAL_FILTER_IDS.forEach(function (filterId) {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'filter-chip';
-        btn.textContent = filter.label;
-        btn.setAttribute('aria-pressed', state.listGoalFilter === filter.id ? 'true' : 'false');
+        btn.textContent = I18n.t('goal.' + filterId);
+        btn.setAttribute('aria-pressed', state.listGoalFilter === filterId ? 'true' : 'false');
         btn.addEventListener('click', function () {
-          state.listGoalFilter = filter.id;
+          state.listGoalFilter = filterId;
           renderFilterChips();
           renderTechniqueList();
         });
@@ -251,14 +306,14 @@
     }
     if (elements.intensityFilters) {
       elements.intensityFilters.innerHTML = '';
-      INTENSITY_FILTERS.forEach(function (filter) {
+      INTENSITY_FILTER_IDS.forEach(function (filterId) {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'filter-chip';
-        btn.textContent = filter.label;
-        btn.setAttribute('aria-pressed', state.listIntensityFilter === filter.id ? 'true' : 'false');
+        btn.textContent = I18n.t('intensity.' + filterId);
+        btn.setAttribute('aria-pressed', state.listIntensityFilter === filterId ? 'true' : 'false');
         btn.addEventListener('click', function () {
-          state.listIntensityFilter = filter.id;
+          state.listIntensityFilter = filterId;
           renderFilterChips();
           renderTechniqueList();
         });
@@ -274,16 +329,21 @@
       elements.continueLastBtn.classList.add('hidden');
       return;
     }
-    const tech = TECHNIQUES.find(function (t) {
-      return t.id === prefs.lastTechId;
-    });
+    const tech = localizeTechnique(
+      TECHNIQUES.find(function (t) {
+        return t.id === prefs.lastTechId;
+      })
+    );
     if (!tech) {
       elements.continueLastBtn.classList.add('hidden');
       return;
     }
     let detail = tech.name;
-    if (tech.durationMode === 'time' && prefs.lastMins) detail += ' · ' + prefs.lastMins + ' min';
-    else if (prefs.lastRounds) detail += ' · ' + prefs.lastRounds + ' rounds';
+    if (tech.durationMode === 'time' && prefs.lastMins) {
+      detail = I18n.t('continueDetail.min', { name: tech.name, n: prefs.lastMins });
+    } else if (prefs.lastRounds) {
+      detail = I18n.t('continueDetail.rounds', { name: tech.name, n: prefs.lastRounds });
+    }
     elements.continueLastDetail.textContent = detail;
     elements.continueLastBtn.classList.remove('hidden');
   }
@@ -322,7 +382,7 @@
     elements.detailFavorite.textContent = fav ? '★' : '☆';
     elements.detailFavorite.setAttribute(
       'aria-label',
-      fav ? 'Remove from favorites' : 'Add to favorites'
+      fav ? I18n.t('detail.removeFavorite') : I18n.t('detail.addFavorite')
     );
   }
 
@@ -330,7 +390,7 @@
     const history = AppStorage.getHistory();
     if (elements.historySummary) {
       elements.historySummary.textContent =
-        AppStorage.getConsistencySummary(history) || 'No completed sessions yet.';
+        AppStorage.getConsistencySummary(history) || I18n.t('history.noSessions');
     }
     if (elements.historyEmpty) {
       elements.historyEmpty.classList.toggle('hidden', history.length > 0);
@@ -342,12 +402,12 @@
       li.className = 'history-item';
       const date = new Date(entry.timestamp);
       let meta = date.toLocaleString();
-      if (entry.durationMinutes) meta += ' · ' + entry.durationMinutes + ' min';
-      if (entry.durationRounds) meta += ' · ' + entry.durationRounds + ' rounds';
+      if (entry.durationMinutes) meta += ' · ' + entry.durationMinutes + ' ' + I18n.t('duration.min');
+      if (entry.durationRounds) meta += ' · ' + entry.durationRounds + ' ' + I18n.t('duration.rounds');
       if (entry.elapsedMs) meta += ' · ' + formatMinutesSeconds(entry.elapsedMs);
       li.innerHTML =
         '<p class="history-item-title">' +
-        escapeHtml(entry.techniqueName || 'Session') +
+        escapeHtml(entry.techniqueName || I18n.t('history.sessionFallback')) +
         '</p><p class="history-item-meta">' +
         escapeHtml(meta) +
         '</p>';
@@ -370,12 +430,21 @@
     if (!elements.settingsDiagnostics) return;
     elements.settingsDiagnostics.innerHTML = '';
     const rows = [
-      ['App version', 'v' + APP_VERSION],
-      ['Online', navigator.onLine ? 'Yes' : 'No'],
-      ['Service worker', 'serviceWorker' in navigator ? 'Supported' : 'Unavailable'],
-      ['Wake lock', 'wakeLock' in navigator ? 'Supported' : 'Unavailable'],
-      ['Audio', audioCues.getLastError() ? 'Error' : 'Ready'],
-      ['Last error', AppLog.getLastError() ? AppLog.getLastError().message : 'None']
+      [I18n.t('diagnostics.appVersion'), 'v' + APP_VERSION],
+      [I18n.t('diagnostics.online'), navigator.onLine ? I18n.t('diagnostics.yes') : I18n.t('diagnostics.no')],
+      [
+        I18n.t('diagnostics.serviceWorker'),
+        'serviceWorker' in navigator ? I18n.t('diagnostics.supported') : I18n.t('diagnostics.unavailable')
+      ],
+      [
+        I18n.t('diagnostics.wakeLock'),
+        'wakeLock' in navigator ? I18n.t('diagnostics.supported') : I18n.t('diagnostics.unavailable')
+      ],
+      [I18n.t('diagnostics.audio'), audioCues.getLastError() ? I18n.t('diagnostics.error') : I18n.t('diagnostics.ready')],
+      [
+        I18n.t('diagnostics.lastError'),
+        AppLog.getLastError() ? AppLog.getLastError().message : I18n.t('diagnostics.none')
+      ]
     ];
     rows.forEach(function (row) {
       const dt = document.createElement('dt');
@@ -399,9 +468,9 @@
     if (!elements.settingsPrefs) return;
     elements.settingsPrefs.innerHTML = '';
     const toggles = [
-      { id: 'settings-sound', label: 'Sound cues', key: 'soundEnabled' },
-      { id: 'settings-haptics', label: 'Vibration', key: 'hapticsEnabled' },
-      { id: 'settings-countdown', label: 'Numeric countdown', key: 'showCountdown' }
+      { id: 'settings-sound', labelKey: 'settings.soundCues', key: 'soundEnabled' },
+      { id: 'settings-haptics', labelKey: 'settings.vibration', key: 'hapticsEnabled' },
+      { id: 'settings-countdown', labelKey: 'settings.countdown', key: 'showCountdown' }
     ];
     toggles.forEach(function (toggle) {
       const label = document.createElement('label');
@@ -410,7 +479,7 @@
         '<input type="checkbox" id="' +
         toggle.id +
         '" role="switch" /><span class="switch-track" aria-hidden="true"></span><span class="switch-label">' +
-        toggle.label +
+        I18n.t(toggle.labelKey) +
         '</span>';
       const input = label.querySelector('input');
       input.checked = state[toggle.key];
@@ -427,7 +496,9 @@
     const volumeWrap = document.createElement('div');
     volumeWrap.className = 'volume-control';
     volumeWrap.innerHTML =
-      '<label class="volume-label" for="settings-volume">Cue volume</label><input type="range" id="settings-volume" min="0" max="100" />';
+      '<label class="volume-label" for="settings-volume">' +
+      I18n.t('settings.cueVolume') +
+      '</label><input type="range" id="settings-volume" min="0" max="100" />';
     const volInput = volumeWrap.querySelector('input');
     volInput.value = String(Math.round(state.volume * 100));
     volInput.oninput = function () {
@@ -442,19 +513,38 @@
     elements.settingsPrefs.appendChild(volumeWrap);
   }
 
-  function renderThemeOptions() {
-    if (!elements.settingsThemeOptions) return;
-    elements.settingsThemeOptions.innerHTML = '';
-    THEME_OPTIONS.forEach(function (option) {
+  function renderLanguageOptions() {
+    if (!elements.settingsLanguageOptions) return;
+    elements.settingsLanguageOptions.innerHTML = '';
+    LOCALE_OPTIONS.forEach(function (option) {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'duration-option';
       btn.setAttribute('role', 'radio');
-      btn.setAttribute('aria-checked', state.theme === option.id ? 'true' : 'false');
-      if (state.theme === option.id) btn.classList.add('selected');
-      btn.textContent = option.label;
+      btn.setAttribute('aria-checked', state.locale === option.id ? 'true' : 'false');
+      if (state.locale === option.id) btn.classList.add('selected');
+      btn.textContent = I18n.t(option.labelKey);
       btn.addEventListener('click', function () {
-        state.theme = option.id;
+        setLocale(option.id);
+      });
+      elements.settingsLanguageOptions.appendChild(btn);
+    });
+  }
+
+  function renderThemeOptions() {
+    if (!elements.settingsThemeOptions) return;
+    elements.settingsThemeOptions.innerHTML = '';
+    THEME_IDS.forEach(function (themeId) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'duration-option';
+      btn.setAttribute('role', 'radio');
+      btn.setAttribute('aria-checked', state.theme === themeId ? 'true' : 'false');
+      if (state.theme === themeId) btn.classList.add('selected');
+      var themeKey = themeId === 'high-contrast' ? 'highContrast' : themeId;
+      btn.textContent = I18n.t('theme.' + themeKey);
+      btn.addEventListener('click', function () {
+        state.theme = themeId;
         applyTheme(state.theme);
         saveState();
         renderThemeOptions();
@@ -465,6 +555,7 @@
 
   function openSettingsScreen() {
     bindSettingsPrefs();
+    renderLanguageOptions();
     renderThemeOptions();
     renderSettingsDiagnostics();
     navigateTo('screen-settings');
@@ -538,7 +629,7 @@
       hideAudioStatus();
       return true;
     }
-    showAudioStatus(audioCues.getLastError() || 'Sound could not start on this device.');
+    showAudioStatus(audioCues.getLastError() || I18n.t('audio.couldNotStart'));
     return false;
   }
 
@@ -638,15 +729,18 @@
     const meta = tech.metadata;
     const chips = [];
     chips.push({
-      label: meta.beginnerFriendly ? 'Beginner friendly' : 'Some experience',
+      label: meta.beginnerFriendly ? I18n.t('meta.beginnerFriendly') : I18n.t('meta.someExperience'),
       className: meta.beginnerFriendly ? 'meta-chip--beginner' : ''
     });
-    chips.push({ label: 'Pace: ' + meta.pace, className: '' });
-    chips.push({ label: meta.includesHolds ? 'Includes holds' : 'No holds', className: '' });
-    chips.push({ label: meta.typicalSession, className: '' });
-    if (meta.nasalControl) chips.push({ label: 'Nasal control', className: '' });
+    chips.push({ label: I18n.t('meta.pace', { pace: getPaceLabel(meta.pace) }), className: '' });
     chips.push({
-      label: tech.intensity.charAt(0).toUpperCase() + tech.intensity.slice(1),
+      label: meta.includesHolds ? I18n.t('meta.includesHolds') : I18n.t('meta.noHolds'),
+      className: ''
+    });
+    chips.push({ label: meta.typicalSession, className: '' });
+    if (meta.nasalControl) chips.push({ label: I18n.t('meta.nasalControl'), className: '' });
+    chips.push({
+      label: I18n.t('intensity.' + tech.intensity),
       className: 'meta-chip--' + tech.intensity
     });
     chips.forEach(function (chip) {
@@ -659,7 +753,7 @@
 
   function renderSafetyWarningBlock(el, tech) {
     if (!el) return;
-    const warning = SAFETY.getTechniqueWarning(tech.id);
+    const warning = getLocalizedSafetyWarning(tech.id);
     if (!warning) {
       el.classList.add('hidden');
       el.innerHTML = '';
@@ -711,19 +805,18 @@
       const cycles = engine.estimateCycles();
       const effectiveMin = Math.round(engine.getEffectiveDurationMs() / 60000);
       return (
-        'About ' +
-        cycles +
-        ' full breath cycles over ~' +
-        effectiveMin +
-        ' min (finishes at end of a cycle).'
+        I18n.t('duration.estimateTime', {
+          cycles: cycles,
+          minutes: effectiveMin
+        })
       );
     }
     const estMs = engine.estimateDurationMs();
     if (estMs) {
       const min = Math.max(1, Math.round(estMs / 60000));
-      return state.durationRounds + ' rounds — about ' + min + '+ min (hold times vary).';
+      return I18n.t('duration.estimateRounds', { rounds: state.durationRounds, minutes: min });
     }
-    return state.durationRounds + ' rounds — hold times vary by pace.';
+    return I18n.t('duration.estimateRoundsVary', { rounds: state.durationRounds });
   }
 
   function updateDurationEstimate() {
@@ -761,9 +854,10 @@
     const limits = getDurationLimits(tech);
     elements.durationOptions.innerHTML = '';
     elements.durationLegend.textContent =
-      tech.durationMode === 'time' ? 'Session length' : 'Number of rounds';
+      tech.durationMode === 'time' ? I18n.t('duration.sessionLength') : I18n.t('duration.numberOfRounds');
     if (elements.durationCustomUnit) {
-      elements.durationCustomUnit.textContent = tech.durationMode === 'time' ? 'min' : 'rounds';
+      elements.durationCustomUnit.textContent =
+        tech.durationMode === 'time' ? I18n.t('duration.min') : I18n.t('duration.rounds');
     }
     if (elements.durationCustom) {
       elements.durationCustom.min = String(limits.min);
@@ -787,8 +881,8 @@
       if (selected) btn.classList.add('selected');
       btn.textContent =
         tech.durationMode === 'time'
-          ? val + ' min'
-          : val + (val === 1 ? ' round' : ' rounds');
+          ? I18n.t('duration.minOption', { n: val })
+          : I18n.plural('duration.roundOption', val, { n: val });
       btn.addEventListener('click', function () {
         setDurationSelection(val, false);
       });
@@ -877,15 +971,15 @@
       }
       state.durationMinutes = null;
     }
-    renderDetailScreen(tech);
+    renderDetailScreen(localizeTechnique(tech));
     saveState();
     navigateTo('screen-detail');
   }
 
   function openDurationSetup() {
-    const tech = state.currentTechnique;
+    const tech = resolveCurrentTechnique();
     if (!tech) return;
-    elements.durationTitle.textContent = tech.name + ' — Setup';
+    elements.durationTitle.textContent = I18n.t('duration.setupTitle', { name: tech.name });
     renderDurationOptions(tech);
     bindDurationPrefs();
     renderSafetyWarningBlock(elements.durationSafetyWarning, tech);
@@ -895,8 +989,9 @@
 
   function renderTechniqueList() {
     elements.techniqueList.innerHTML = '';
-    TECHNIQUES.forEach(function (tech) {
-      if (!techniqueMatchesFilters(tech)) return;
+    TECHNIQUES.forEach(function (baseTech) {
+      if (!techniqueMatchesFilters(baseTech)) return;
+      const tech = localizeTechnique(baseTech);
       const li = document.createElement('li');
       const card = document.createElement('button');
       card.type = 'button';
@@ -908,7 +1003,7 @@
       if (AppStorage.isFavorite(tech.id)) {
         const fav = document.createElement('span');
         fav.className = 'meta-chip meta-chip--beginner';
-        fav.textContent = 'Favorite';
+        fav.textContent = I18n.t('meta.favorite');
         chips.appendChild(fav);
       }
       card.innerHTML =
@@ -943,22 +1038,27 @@
     elements.safetyModalBody.innerHTML = '';
     const disclaimer = document.createElement('p');
     disclaimer.className = 'safety-disclaimer';
-    disclaimer.textContent = SAFETY.wellnessDisclaimer;
+    const safety = I18n.getSafety();
+    disclaimer.textContent = safety.wellnessDisclaimer || SAFETY.wellnessDisclaimer;
     elements.safetyModalBody.appendChild(disclaimer);
     const generalHeading = document.createElement('h3');
     generalHeading.className = 'safety-section-title';
-    generalHeading.textContent = 'General guidance';
+    generalHeading.textContent = I18n.t('safety.generalGuidance');
     elements.safetyModalBody.appendChild(generalHeading);
-    elements.safetyModalBody.appendChild(renderSafetyList(SAFETY.globalGuidance));
+    elements.safetyModalBody.appendChild(
+      renderSafetyList(safety.globalGuidance || SAFETY.globalGuidance)
+    );
     if (!technique || SAFETY.isHighIntensity(technique)) {
       const intenseHeading = document.createElement('h3');
       intenseHeading.className = 'safety-section-title';
-      intenseHeading.textContent = 'High-intensity techniques';
+      intenseHeading.textContent = I18n.t('safety.highIntensity');
       elements.safetyModalBody.appendChild(intenseHeading);
-      elements.safetyModalBody.appendChild(renderSafetyList(SAFETY.highIntensityExtra));
+      elements.safetyModalBody.appendChild(
+        renderSafetyList(safety.highIntensityExtra || SAFETY.highIntensityExtra)
+      );
     }
     if (technique) {
-      const warning = SAFETY.getTechniqueWarning(technique.id);
+      const warning = getLocalizedSafetyWarning(technique.id);
       if (warning) {
         const techHeading = document.createElement('h3');
         techHeading.className = 'safety-section-title';
@@ -1075,11 +1175,11 @@
       durationRounds: state.durationRounds
     });
     const list = engine.getPhaseList();
-    if (snapshot.phase.tapHold) return 'Next: Recovery inhale';
+    if (snapshot.phase.tapHold) return I18n.t('exercise.nextRecoveryInhale');
     var idx = snapshot.phaseIndex;
     var nextIdx = (idx + 1) % list.length;
     var next = list[nextIdx];
-    return next ? 'Next: ' + (next.label || next.type) : '';
+    return next ? I18n.t('exercise.next', { phase: next.label || next.type }) : '';
   }
 
   function setBreathVisual(snapshot) {
@@ -1125,19 +1225,24 @@
     }
 
     if (snapshot.totalRounds != null) {
-      elements.exerciseRoundInfo.textContent =
-        'Round ' + (snapshot.round + 1) + ' of ' + snapshot.totalRounds;
+      elements.exerciseRoundInfo.textContent = I18n.t('exercise.roundOf', {
+        current: snapshot.round + 1,
+        total: snapshot.totalRounds
+      });
     } else {
       elements.exerciseRoundInfo.textContent = '';
     }
 
     if (elements.exerciseSessionLeft) {
       if (snapshot.remainingMs != null) {
-        elements.exerciseSessionLeft.textContent =
-          formatMinutesSeconds(snapshot.remainingMs) + ' left';
+        elements.exerciseSessionLeft.textContent = I18n.t('exercise.left', {
+          time: formatMinutesSeconds(snapshot.remainingMs)
+        });
       } else if (snapshot.totalRounds != null) {
-        elements.exerciseSessionLeft.textContent =
-          'Round ' + (snapshot.round + 1) + ' of ' + snapshot.totalRounds;
+        elements.exerciseSessionLeft.textContent = I18n.t('exercise.roundOf', {
+          current: snapshot.round + 1,
+          total: snapshot.totalRounds
+        });
       }
     }
 
@@ -1154,7 +1259,9 @@
       if (sig !== lastAnnouncedPhase) {
         lastAnnouncedPhase = sig;
         const label = p.label || p.type;
-        announceToScreenReader(label + (state.showCountdown ? ', ' + secLeft + ' seconds' : ''));
+        announceToScreenReader(
+          I18n.t('exercise.seconds', { label: label, count: secLeft })
+        );
       }
     }
   }
@@ -1163,11 +1270,11 @@
     if (!elements.completionStats || !stats) return;
     elements.completionStats.innerHTML = '';
     const rows = [
-      ['Elapsed', formatMinutesSeconds(stats.elapsedMs)],
-      ['Technique', stats.techniqueName]
+      [I18n.t('completion.elapsed'), formatMinutesSeconds(stats.elapsedMs)],
+      [I18n.t('completion.technique'), stats.techniqueName]
     ];
-    if (stats.roundsCompleted != null) rows.push(['Rounds', String(stats.roundsCompleted)]);
-    if (stats.cyclesCompleted != null) rows.push(['Cycles', String(stats.cyclesCompleted)]);
+    if (stats.roundsCompleted != null) rows.push([I18n.t('completion.rounds'), String(stats.roundsCompleted)]);
+    if (stats.cyclesCompleted != null) rows.push([I18n.t('completion.cycles'), String(stats.cyclesCompleted)]);
     rows.forEach(function (row) {
       const dt = document.createElement('dt');
       dt.textContent = row[0];
@@ -1216,8 +1323,8 @@
     function setPausedMessage(autoPause) {
       if (!elements.exercisePausedMessage) return;
       elements.exercisePausedMessage.textContent = autoPause
-        ? 'Paused — returned from background'
-        : 'Paused';
+        ? I18n.t('exercise.pausedBackground')
+        : I18n.t('exercise.paused');
     }
 
     function endSession(completed) {
@@ -1245,10 +1352,10 @@
           elapsedMs: elapsedMs,
           completed: true
         };
-        elements.completionMessage.textContent = 'Session complete.';
+        elements.completionMessage.textContent = I18n.t('completion.sessionComplete');
         renderCompletionStats(sessionStats);
         if (elements.completionNote) elements.completionNote.value = '';
-        announceToScreenReader('Session complete.');
+        announceToScreenReader(I18n.t('completion.sessionComplete'));
         navigateTo('screen-completion');
       } else {
         navigateTo('screen-list');
@@ -1291,7 +1398,9 @@
       elements.exercisePaused.classList.remove('hidden');
       elements.exercisePaused.setAttribute('aria-hidden', 'false');
       releaseWakeLock();
-      announceToScreenReader(autoPause ? 'Paused. Returned from background.' : 'Paused.');
+      announceToScreenReader(
+        autoPause ? I18n.t('exercise.pausedBackgroundSr') : I18n.t('exercise.pausedSr')
+      );
       window.setTimeout(function () {
         pauseToggleLock = false;
       }, 400);
@@ -1305,7 +1414,7 @@
       elements.exercisePaused.setAttribute('aria-hidden', 'true');
       unlockAudioFromUserGesture();
       acquireWakeLock();
-      announceToScreenReader('Resumed.');
+      announceToScreenReader(I18n.t('exercise.resumedSr'));
       window.setTimeout(function () {
         pauseToggleLock = false;
       }, 400);
@@ -1392,7 +1501,7 @@
   function beginSession() {
     if (startInProgress) return;
     startInProgress = true;
-    const tech = state.currentTechnique;
+    const tech = localizeTechnique(state.currentTechnique);
     if (!tech) {
       startInProgress = false;
       return;
@@ -1412,9 +1521,11 @@
     if (elements.exerciseCountdown) elements.exerciseCountdown.textContent = '';
 
     const firstPhase = tech.phases && tech.phases[0];
-    const firstPhaseLabel = firstPhase ? firstPhase.label || firstPhase.type : 'Inhale';
+    const firstPhaseLabel = firstPhase ? firstPhase.label || firstPhase.type : I18n.t('exercise.inhale');
     if (elements.exerciseGetReadyHint) {
-      elements.exerciseGetReadyHint.textContent = 'Starting with: ' + firstPhaseLabel;
+      elements.exerciseGetReadyHint.textContent = I18n.t('exercise.startingWith', {
+        phase: firstPhaseLabel
+      });
     }
     if (elements.exerciseGetReadyCountdown) {
       elements.exerciseGetReadyCountdown.textContent = String(GET_READY_SECONDS);
@@ -1469,7 +1580,11 @@
     activeExerciseSession = createExerciseSession(tech);
     activeExerciseSession.start();
     startInProgress = false;
-    announceToScreenReader('Session started. ' + (tech.phases[0].label || 'Inhale'));
+    announceToScreenReader(
+      I18n.t('exercise.sessionStarted', {
+        phase: tech.phases[0].label || I18n.t('exercise.inhale')
+      })
+    );
   }
 
   function handleBeforeBack(fromScreen, toScreen) {
@@ -1566,7 +1681,7 @@
   }
   if (elements.historyClear) {
     elements.historyClear.addEventListener('click', function () {
-      if (window.confirm('Delete all session history on this device?')) {
+      if (window.confirm(I18n.t('history.confirmDelete'))) {
         AppStorage.clearHistory();
         renderHistoryScreen();
       }
@@ -1574,7 +1689,7 @@
   }
   if (elements.settingsClearData) {
     elements.settingsClearData.addEventListener('click', function () {
-      if (window.confirm('Clear preferences and history on this device?')) {
+      if (window.confirm(I18n.t('settings.confirmClear'))) {
         AppStorage.clearAllUserData();
         loadState();
         renderFilterChips();
@@ -1653,6 +1768,7 @@
   }, LOADER_DELAY_MS);
 
   loadState();
+  applyDocumentI18n();
   applyAudioSettings();
   renderFilterChips();
   renderTechniqueList();

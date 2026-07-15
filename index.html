@@ -21,37 +21,37 @@
   <div id="sr-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
   <div id="update-banner" class="update-banner hidden" aria-hidden="true">
-    <p>A new version is available!</p>
-    <button type="button" id="update-reload">Update now</button>
+    <p data-i18n="update.available">A new version is available!</p>
+    <button type="button" id="update-reload" data-i18n="update.reload">Update now</button>
   </div>
   <p id="update-notice" class="update-notice hidden" role="status" aria-live="polite"></p>
 
   <div id="install-hint" class="install-hint hidden" role="note">
-    <p>Install on iPhone: tap <strong>Share</strong> → <strong>Add to Home Screen</strong>.</p>
-    <button type="button" class="install-hint-dismiss" id="install-hint-dismiss">Dismiss</button>
+    <p data-i18n-html="install.hint">Install on iPhone: tap <strong>Share</strong> → <strong>Add to Home Screen</strong>.</p>
+    <button type="button" class="install-hint-dismiss" id="install-hint-dismiss" data-i18n="install.dismiss">Dismiss</button>
   </div>
 
   <div id="screen-list" class="screen screen-active" data-screen="list">
     <header class="header header-with-actions">
-      <h1 id="list-heading">Breathwork</h1>
+      <h1 id="list-heading" data-i18n="app.title">Breathwork</h1>
       <div class="header-actions">
-        <button type="button" class="header-link-btn" id="list-history-btn" aria-label="Session history">History</button>
-        <button type="button" class="header-link-btn" id="list-settings-btn" aria-label="Settings">Settings</button>
+        <button type="button" class="header-link-btn" id="list-history-btn" data-i18n="list.history" data-i18n-aria="aria-label:list.history">History</button>
+        <button type="button" class="header-link-btn" id="list-settings-btn" data-i18n="list.settings" data-i18n-aria="aria-label:list.settings">Settings</button>
       </div>
     </header>
     <main class="main list-main">
-      <p class="section-intro">Choose a guided breathing technique. Each session includes timing cues you can follow with eyes closed.</p>
+      <p class="section-intro" data-i18n="list.intro">Choose a guided breathing technique. Each session includes timing cues you can follow with eyes closed.</p>
       <button type="button" class="continue-card hidden" id="continue-last-btn">
-        <span class="continue-card-label">Continue with last settings</span>
+        <span class="continue-card-label" data-i18n="list.continueLast">Continue with last settings</span>
         <span class="continue-card-detail" id="continue-last-detail"></span>
       </button>
-      <div class="filter-bar" role="toolbar" aria-label="Filter techniques">
-        <div id="goal-filters" class="filter-chips" aria-label="Filter by goal"></div>
-        <div id="intensity-filters" class="filter-chips" aria-label="Filter by intensity"></div>
+      <div class="filter-bar" role="toolbar" data-i18n-aria="aria-label:list.filterTechniques">
+        <div id="goal-filters" class="filter-chips" data-i18n-aria="aria-label:list.filterGoal"></div>
+        <div id="intensity-filters" class="filter-chips" data-i18n-aria="aria-label:list.filterIntensity"></div>
       </div>
-      <aside class="safety-notice" aria-label="Safety guidance">
-        <p>Practice seated or lying down. Never force a breath or hold. Stop and rest if you feel dizzy or lightheaded.</p>
-        <button type="button" class="safety-info-link" id="safety-info-link">Safety information</button>
+      <aside class="safety-notice" data-i18n-aria="aria-label:safety.modalTitle">
+        <p data-i18n="list.safetyNotice">Practice seated or lying down. Never force a breath or hold. Stop and rest if you feel dizzy or lightheaded.</p>
+        <button type="button" class="safety-info-link" id="safety-info-link" data-i18n="list.safetyInfo">Safety information</button>
       </aside>
       <ul id="technique-list" class="technique-list" role="list"></ul>
       <p id="app-status-text" class="app-status-text"></p>
@@ -60,81 +60,81 @@
 
   <div id="screen-detail" class="screen" data-screen="detail" aria-hidden="true" inert>
     <header class="header">
-      <button type="button" class="back-btn" id="detail-back" aria-label="Back to techniques">←</button>
-      <h1 id="detail-title">Technique</h1>
-      <button type="button" class="favorite-btn" id="detail-favorite" aria-label="Add to favorites" aria-pressed="false">☆</button>
+      <button type="button" class="back-btn" id="detail-back" data-i18n-aria="aria-label:detail.backAria">←</button>
+      <h1 id="detail-title" data-i18n="detail.technique">Technique</h1>
+      <button type="button" class="favorite-btn" id="detail-favorite" data-i18n-aria="aria-label:detail.addFavorite" aria-pressed="false">☆</button>
     </header>
     <main class="main detail-main">
-      <div id="detail-meta" class="meta-chips" aria-label="Technique details"></div>
+      <div id="detail-meta" class="meta-chips" data-i18n-aria="aria-label:detail.techniqueDetails"></div>
       <section class="detail-section" aria-labelledby="detail-how-heading">
-        <h2 id="detail-how-heading" class="detail-heading">How to practice</h2>
+        <h2 id="detail-how-heading" class="detail-heading" data-i18n="detail.howToPractice">How to practice</h2>
         <p id="detail-posture" class="detail-posture"></p>
         <ol id="detail-steps" class="detail-steps"></ol>
       </section>
       <section class="detail-section" aria-labelledby="detail-sequence-heading">
-        <h2 id="detail-sequence-heading" class="detail-heading">Phase sequence</h2>
+        <h2 id="detail-sequence-heading" class="detail-heading" data-i18n="detail.phaseSequence">Phase sequence</h2>
         <p id="detail-sequence" class="detail-sequence"></p>
       </section>
       <section class="detail-section" aria-labelledby="detail-sensations-heading">
-        <h2 id="detail-sensations-heading" class="detail-heading">What to expect</h2>
+        <h2 id="detail-sensations-heading" class="detail-heading" data-i18n="detail.whatToExpect">What to expect</h2>
         <p id="detail-sensations" class="detail-sensations"></p>
         <p id="detail-notes" class="detail-notes hidden"></p>
       </section>
       <div id="detail-safety-warning" class="duration-safety-warning hidden" role="note"></div>
-      <button type="button" class="btn btn-primary" id="detail-continue">Continue to setup</button>
+      <button type="button" class="btn btn-primary" id="detail-continue" data-i18n="detail.continueSetup">Continue to setup</button>
     </main>
   </div>
 
   <div id="screen-duration" class="screen" data-screen="duration" aria-hidden="true" inert>
     <header class="header">
-      <button type="button" class="back-btn" id="duration-back" aria-label="Back to instructions">←</button>
-      <h1 id="duration-title">Setup</h1>
+      <button type="button" class="back-btn" id="duration-back" data-i18n-aria="aria-label:duration.backAria">←</button>
+      <h1 id="duration-title" data-i18n="duration.setup">Setup</h1>
     </header>
     <main class="main duration-main">
       <p id="duration-estimate" class="duration-estimate" role="status"></p>
       <fieldset class="duration-fieldset">
-        <legend id="duration-legend" class="duration-legend">Session length</legend>
+        <legend id="duration-legend" class="duration-legend" data-i18n="duration.sessionLength">Session length</legend>
         <div id="duration-options" class="duration-options" role="radiogroup" aria-labelledby="duration-legend"></div>
       </fieldset>
       <div id="duration-custom-wrap" class="duration-custom-wrap">
-        <label class="duration-custom-label" for="duration-custom">Custom</label>
+        <label class="duration-custom-label" for="duration-custom" data-i18n="duration.custom">Custom</label>
         <input type="number" id="duration-custom" class="duration-custom-input" min="1" max="30" inputmode="numeric" />
-        <span id="duration-custom-unit" class="duration-custom-unit">min</span>
+        <span id="duration-custom-unit" class="duration-custom-unit" data-i18n="duration.min">min</span>
       </div>
       <div id="duration-safety-warning" class="duration-safety-warning hidden" role="note"></div>
       <div class="pref-group">
         <label class="switch-toggle" id="sound-toggle-label">
           <input type="checkbox" id="duration-sound" role="switch" />
           <span class="switch-track" aria-hidden="true"></span>
-          <span class="switch-label">Sound cues on phase change</span>
+          <span class="switch-label" data-i18n="duration.soundCues">Sound cues on phase change</span>
         </label>
         <label class="switch-toggle" id="haptics-toggle-label">
           <input type="checkbox" id="duration-haptics" role="switch" />
           <span class="switch-track" aria-hidden="true"></span>
-          <span class="switch-label">Vibration on phase change</span>
+          <span class="switch-label" data-i18n="duration.vibration">Vibration on phase change</span>
         </label>
         <label class="switch-toggle" id="countdown-toggle-label">
           <input type="checkbox" id="duration-show-countdown" role="switch" checked />
           <span class="switch-track" aria-hidden="true"></span>
-          <span class="switch-label">Show numeric countdown</span>
+          <span class="switch-label" data-i18n="duration.showCountdown">Show numeric countdown</span>
         </label>
       </div>
       <div class="volume-control" id="volume-control-wrap">
-        <label class="volume-label" for="duration-volume">Cue volume</label>
+        <label class="volume-label" for="duration-volume" data-i18n="duration.cueVolume">Cue volume</label>
         <input type="range" id="duration-volume" min="0" max="100" value="70" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70" />
       </div>
       <p id="audio-status" class="audio-status hidden" role="status"></p>
-      <button type="button" class="safety-info-link duration-safety-link" id="duration-safety-link">View full safety information</button>
-      <button type="button" class="btn btn-primary" id="duration-start">Start</button>
+      <button type="button" class="safety-info-link duration-safety-link" id="duration-safety-link" data-i18n="duration.viewSafety">View full safety information</button>
+      <button type="button" class="btn btn-primary" id="duration-start" data-i18n="duration.start">Start</button>
     </main>
   </div>
 
   <div id="screen-exercise" class="screen" data-screen="exercise" aria-hidden="true" inert>
     <header class="header exercise-header">
-      <button type="button" class="back-btn emergency-stop-btn" id="exercise-stop" aria-label="Emergency stop — end session immediately">Stop</button>
+      <button type="button" class="back-btn emergency-stop-btn" id="exercise-stop" data-i18n="exercise.stop" data-i18n-aria="aria-label:exercise.stopAria">Stop</button>
       <span id="exercise-technique-name" class="exercise-technique-name"></span>
       <span id="exercise-round-info" class="round-info"></span>
-      <button type="button" class="pause-btn" id="exercise-pause" aria-label="Pause session">⏸</button>
+      <button type="button" class="pause-btn" id="exercise-pause" aria-label="Pause session" data-i18n-aria="aria-label:exercise.pauseAria">⏸</button>
     </header>
     <main class="main exercise-main">
       <div id="exercise-session-left" class="session-left"></div>
@@ -145,123 +145,127 @@
           <circle class="circle-progress" cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="339.292" stroke-dashoffset="339.292" transform="rotate(-90 60 60)" />
         </svg>
         <div class="circle-center">
-          <div id="exercise-phase-label" class="phase-label">Inhale</div>
+          <div id="exercise-phase-label" class="phase-label" data-i18n="exercise.inhale">Inhale</div>
           <div id="exercise-countdown" class="countdown">4</div>
         </div>
       </div>
       <p id="exercise-next-phase" class="next-phase-hint" aria-hidden="true"></p>
       <div id="exercise-tap-hold" class="tap-hold hidden">
-        <p class="tap-hold-text">Hold your breath. Tap when you need to breathe.</p>
-        <button type="button" class="btn btn-breathe" id="exercise-need-breathe">I need to breathe</button>
+        <p class="tap-hold-text" data-i18n="exercise.holdTap">Hold your breath. Tap when you need to breathe.</p>
+        <button type="button" class="btn btn-breathe" id="exercise-need-breathe" data-i18n="exercise.needToBreathe">I need to breathe</button>
       </div>
       <div id="exercise-get-ready" class="get-ready-overlay hidden" aria-hidden="true">
-        <p class="get-ready-text">Get ready</p>
+        <p class="get-ready-text" data-i18n="exercise.getReady">Get ready</p>
         <div id="exercise-get-ready-countdown" class="get-ready-countdown">3</div>
         <p id="exercise-get-ready-hint" class="get-ready-hint"></p>
-        <button type="button" class="btn btn-secondary get-ready-skip" id="exercise-get-ready-skip">Skip</button>
+        <button type="button" class="btn btn-secondary get-ready-skip" id="exercise-get-ready-skip" data-i18n="exercise.skip">Skip</button>
       </div>
       <div id="exercise-paused" class="paused-overlay hidden" aria-hidden="true">
-        <p id="exercise-paused-message">Paused</p>
-        <button type="button" class="btn btn-primary" id="exercise-resume">Resume</button>
-        <button type="button" class="btn btn-secondary" id="exercise-end-session">End session</button>
+        <p id="exercise-paused-message" data-i18n="exercise.paused">Paused</p>
+        <button type="button" class="btn btn-primary" id="exercise-resume" data-i18n="exercise.resume">Resume</button>
+        <button type="button" class="btn btn-secondary" id="exercise-end-session" data-i18n="exercise.endSession">End session</button>
       </div>
     </main>
   </div>
 
   <div id="screen-completion" class="screen" data-screen="completion" aria-hidden="true" inert>
     <main class="main completion-main">
-      <h2 id="completion-heading">Done</h2>
-      <p id="completion-message" class="completion-message">Session complete.</p>
+      <h2 id="completion-heading" data-i18n="completion.done">Done</h2>
+      <p id="completion-message" class="completion-message" data-i18n="completion.sessionComplete">Session complete.</p>
       <dl id="completion-stats" class="completion-stats"></dl>
-      <label class="completion-note-label" for="completion-note">Optional note</label>
-      <textarea id="completion-note" class="completion-note" rows="2" maxlength="200" placeholder="How did this session feel?"></textarea>
+      <label class="completion-note-label" for="completion-note" data-i18n="completion.optionalNote">Optional note</label>
+      <textarea id="completion-note" class="completion-note" rows="2" maxlength="200" data-i18n-placeholder="completion.notePlaceholder" placeholder="How did this session feel?"></textarea>
       <div class="completion-actions">
-        <button type="button" class="btn btn-primary" id="completion-save">Save &amp; finish</button>
-        <button type="button" class="btn btn-secondary" id="completion-again">Practice again</button>
-        <button type="button" class="btn btn-secondary" id="completion-list">Back to list</button>
+        <button type="button" class="btn btn-primary" id="completion-save" data-i18n="completion.saveFinish">Save &amp; finish</button>
+        <button type="button" class="btn btn-secondary" id="completion-again" data-i18n="completion.practiceAgain">Practice again</button>
+        <button type="button" class="btn btn-secondary" id="completion-list" data-i18n="completion.backToList">Back to list</button>
       </div>
     </main>
   </div>
 
   <div id="screen-history" class="screen" data-screen="history" aria-hidden="true" inert>
     <header class="header">
-      <button type="button" class="back-btn" id="history-back" aria-label="Back to techniques">←</button>
-      <h1>History</h1>
+      <button type="button" class="back-btn" id="history-back" data-i18n-aria="aria-label:history.backAria">←</button>
+      <h1 data-i18n="history.title">History</h1>
     </header>
     <main class="main history-main">
       <p id="history-summary" class="history-summary"></p>
       <ul id="history-list" class="history-list" role="list"></ul>
-      <p id="history-empty" class="history-empty hidden">Completed sessions appear here. Incomplete sessions are not saved.</p>
+      <p id="history-empty" class="history-empty hidden" data-i18n="history.empty">Completed sessions appear here. Incomplete sessions are not saved.</p>
       <div class="history-actions">
-        <button type="button" class="btn btn-secondary" id="history-export">Export JSON</button>
-        <button type="button" class="btn btn-secondary" id="history-clear">Delete all history</button>
+        <button type="button" class="btn btn-secondary" id="history-export" data-i18n="history.exportJson">Export JSON</button>
+        <button type="button" class="btn btn-secondary" id="history-clear" data-i18n="history.deleteAll">Delete all history</button>
       </div>
     </main>
   </div>
 
   <div id="screen-settings" class="screen" data-screen="settings" aria-hidden="true" inert>
     <header class="header">
-      <button type="button" class="back-btn" id="settings-back" aria-label="Back to techniques">←</button>
-      <h1>Settings</h1>
+      <button type="button" class="back-btn" id="settings-back" data-i18n-aria="aria-label:settings.backAria">←</button>
+      <h1 data-i18n="settings.title">Settings</h1>
     </header>
     <main class="main settings-main">
       <section class="settings-section" aria-labelledby="settings-prefs-heading">
-        <h2 id="settings-prefs-heading" class="detail-heading">Session preferences</h2>
+        <h2 id="settings-prefs-heading" class="detail-heading" data-i18n="settings.sessionPrefs">Session preferences</h2>
         <div class="pref-group" id="settings-prefs"></div>
       </section>
+      <section class="settings-section" aria-labelledby="settings-language-heading">
+        <h2 id="settings-language-heading" class="detail-heading" data-i18n="settings.language">Language</h2>
+        <div id="settings-language-options" class="duration-options" role="radiogroup" aria-labelledby="settings-language-heading"></div>
+      </section>
       <section class="settings-section" aria-labelledby="settings-theme-heading">
-        <h2 id="settings-theme-heading" class="detail-heading">Theme</h2>
+        <h2 id="settings-theme-heading" class="detail-heading" data-i18n="settings.theme">Theme</h2>
         <div id="settings-theme-options" class="duration-options" role="radiogroup" aria-labelledby="settings-theme-heading"></div>
       </section>
       <section class="settings-section" aria-labelledby="settings-diagnostics-heading">
-        <h2 id="settings-diagnostics-heading" class="detail-heading">Diagnostics</h2>
+        <h2 id="settings-diagnostics-heading" class="detail-heading" data-i18n="settings.diagnostics">Diagnostics</h2>
         <dl id="settings-diagnostics" class="diagnostics-list"></dl>
-        <button type="button" class="btn btn-secondary" id="settings-show-onboarding">Show onboarding again</button>
+        <button type="button" class="btn btn-secondary" id="settings-show-onboarding" data-i18n="settings.showOnboarding">Show onboarding again</button>
       </section>
       <section class="settings-section" aria-labelledby="settings-privacy-heading">
-        <h2 id="settings-privacy-heading" class="detail-heading">Privacy &amp; data</h2>
-        <p class="settings-privacy-text">All preferences and history stay on this device. Nothing is sent to a server. See <a href="docs/privacy.md" id="settings-privacy-link">privacy details</a>.</p>
+        <h2 id="settings-privacy-heading" class="detail-heading" data-i18n="settings.privacyData">Privacy &amp; data</h2>
+        <p class="settings-privacy-text" data-i18n-html="settings.privacyText">All preferences and history stay on this device. Nothing is sent to a server. See <a href="docs/privacy.md" id="settings-privacy-link">privacy details</a>.</p>
         <ul id="settings-stored-keys" class="stored-keys-list"></ul>
-        <button type="button" class="btn btn-secondary" id="settings-clear-data">Clear preferences &amp; history</button>
+        <button type="button" class="btn btn-secondary" id="settings-clear-data" data-i18n="settings.clearData">Clear preferences &amp; history</button>
       </section>
     </main>
   </div>
 
   <div id="onboarding-modal" class="onboarding-modal hidden" role="dialog" aria-labelledby="onboarding-title" aria-modal="true" aria-hidden="true">
     <div class="onboarding-panel">
-      <h2 id="onboarding-title" class="onboarding-title">Welcome to Breathwork</h2>
+      <h2 id="onboarding-title" class="onboarding-title" data-i18n="onboarding.title">Welcome to Breathwork</h2>
       <ol class="onboarding-steps">
-        <li>Practice seated or lying down. Stop if you feel unwell.</li>
-        <li>The circle expands on inhale and contracts on exhale. Sound and vibration cues are optional.</li>
-        <li>Open a technique for instructions, then choose duration and start.</li>
-        <li>After your first online visit, the app works offline on this device.</li>
+        <li data-i18n="onboarding.step1">Practice seated or lying down. Stop if you feel unwell.</li>
+        <li data-i18n="onboarding.step2">The circle expands on inhale and contracts on exhale. Sound and vibration cues are optional.</li>
+        <li data-i18n="onboarding.step3">Open a technique for instructions, then choose duration and start.</li>
+        <li data-i18n="onboarding.step4">After your first online visit, the app works offline on this device.</li>
       </ol>
-      <button type="button" class="btn btn-primary" id="onboarding-dismiss">Get started</button>
+      <button type="button" class="btn btn-primary" id="onboarding-dismiss" data-i18n="onboarding.dismiss">Get started</button>
     </div>
   </div>
 
   <div id="abandon-dialog" class="abandon-dialog hidden" role="alertdialog" aria-modal="true" aria-labelledby="abandon-dialog-title" aria-describedby="abandon-dialog-desc" aria-hidden="true">
     <div class="abandon-dialog-panel">
-      <h2 id="abandon-dialog-title" class="abandon-dialog-title">End session?</h2>
-      <p id="abandon-dialog-desc" class="abandon-dialog-desc">Your progress in this session will not be saved.</p>
+      <h2 id="abandon-dialog-title" class="abandon-dialog-title" data-i18n="abandon.title">End session?</h2>
+      <p id="abandon-dialog-desc" class="abandon-dialog-desc" data-i18n="abandon.desc">Your progress in this session will not be saved.</p>
       <div class="abandon-dialog-actions">
-        <button type="button" class="btn btn-primary" id="abandon-keep-going">Keep going</button>
-        <button type="button" class="btn btn-secondary" id="abandon-confirm">End session</button>
+        <button type="button" class="btn btn-primary" id="abandon-keep-going" data-i18n="abandon.keepGoing">Keep going</button>
+        <button type="button" class="btn btn-secondary" id="abandon-confirm" data-i18n="abandon.endSession">End session</button>
       </div>
     </div>
   </div>
 
   <div id="safety-modal" class="safety-modal hidden" role="dialog" aria-labelledby="safety-modal-title" aria-modal="true" aria-hidden="true">
     <div class="safety-modal-panel">
-      <h2 id="safety-modal-title" class="safety-modal-title">Safety information</h2>
+      <h2 id="safety-modal-title" class="safety-modal-title" data-i18n="safety.modalTitle">Safety information</h2>
       <div id="safety-modal-body" class="safety-modal-body"></div>
       <label class="safety-ack-label" id="safety-ack-wrap">
         <input type="checkbox" id="safety-ack-checkbox" />
-        <span>I understand these safety guidelines and will stop if I feel unwell</span>
+        <span data-i18n="safety.ack">I understand these safety guidelines and will stop if I feel unwell</span>
       </label>
       <div class="safety-modal-actions">
-        <button type="button" class="btn btn-secondary" id="safety-modal-close">Close</button>
-        <button type="button" class="btn btn-primary" id="safety-modal-continue" disabled>Continue to session</button>
+        <button type="button" class="btn btn-secondary" id="safety-modal-close" data-i18n="safety.close">Close</button>
+        <button type="button" class="btn btn-primary" id="safety-modal-continue" disabled data-i18n="safety.continueSession">Continue to session</button>
       </div>
     </div>
   </div>
@@ -269,6 +273,9 @@
   <script src="version.js"></script>
   <script src="logger.js"></script>
   <script src="storage.js"></script>
+  <script src="locales/en.js"></script>
+  <script src="locales/pl.js"></script>
+  <script src="i18n.js"></script>
   <script src="techniques.js"></script>
   <script src="safety.js"></script>
   <script src="session-engine.js"></script>

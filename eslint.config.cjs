@@ -17,7 +17,10 @@ module.exports = [
         AudioCues: 'readonly',
         AppNavigation: 'readonly',
         AppStorage: 'readonly',
-        AppLog: 'readonly'
+        AppLog: 'readonly',
+        I18n: 'readonly',
+        I18N_EN: 'readonly',
+        I18N_PL: 'readonly'
       }
     },
     rules: {
@@ -35,7 +38,9 @@ module.exports = [
       'session-engine.js',
       'techniques.js',
       'version.js',
-      'storage.js'
+      'storage.js',
+      'i18n.js',
+      'locales/*.js'
     ],
     languageOptions: {
       globals: {
