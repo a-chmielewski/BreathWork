@@ -55,6 +55,8 @@
     ambientVolume: 0.45,
     guidedDimView: false,
     showCountdown: true,
+    techniqueVariations: {},
+    handsFreeNostril: false,
     useCustomDuration: false,
     theme: 'system',
     listGoalFilter: 'all',
@@ -81,6 +83,7 @@
     listHistoryBtn: document.getElementById('list-history-btn'),
     listSettingsBtn: document.getElementById('list-settings-btn'),
     guidedSessionList: document.getElementById('guided-session-list'),
+    kundaliniTechniqueList: document.getElementById('kundalini-technique-list'),
     guidedBack: document.getElementById('guided-back'),
     guidedTitle: document.getElementById('guided-title'),
     guidedDescription: document.getElementById('guided-description'),
@@ -90,6 +93,7 @@
     guidedAmbientEnabled: document.getElementById('guided-ambient-enabled'),
     guidedAmbientVolume: document.getElementById('guided-ambient-volume'),
     guidedAudioStatus: document.getElementById('guided-audio-status'),
+    guidedAudioControls: document.getElementById('guided-audio-controls'),
     guidedOptions: document.getElementById('guided-options'),
     guidedPaceDescription: document.getElementById('guided-pace-description'),
     guidedDimView: document.getElementById('guided-dim-view'),
@@ -105,6 +109,11 @@
     detailSequence: document.getElementById('detail-sequence'),
     detailSensations: document.getElementById('detail-sensations'),
     detailNotes: document.getElementById('detail-notes'),
+    detailDemoSection: document.getElementById('detail-demo-section'),
+    detailDemoStatus: document.getElementById('detail-demo-status'),
+    detailTraditionalContext: document.getElementById('detail-traditional-context'),
+    detailTraditionalBody: document.getElementById('detail-traditional-body'),
+    detailTraditionalSource: document.getElementById('detail-traditional-source'),
     detailSafetyWarning: document.getElementById('detail-safety-warning'),
     detailContinue: document.getElementById('detail-continue'),
     detailFavorite: document.getElementById('detail-favorite'),
@@ -113,6 +122,8 @@
     durationLegend: document.getElementById('duration-legend'),
     durationEstimate: document.getElementById('duration-estimate'),
     durationOptions: document.getElementById('duration-options'),
+    variationFieldset: document.getElementById('variation-fieldset'),
+    variationOptions: document.getElementById('variation-options'),
     durationCustomWrap: document.getElementById('duration-custom-wrap'),
     durationCustom: document.getElementById('duration-custom'),
     durationCustomUnit: document.getElementById('duration-custom-unit'),
@@ -120,6 +131,8 @@
     durationSound: document.getElementById('duration-sound'),
     durationHaptics: document.getElementById('duration-haptics'),
     durationShowCountdown: document.getElementById('duration-show-countdown'),
+    durationHandsFreeNostril: document.getElementById('duration-hands-free-nostril'),
+    handsFreeToggleLabel: document.getElementById('hands-free-toggle-label'),
     durationVolume: document.getElementById('duration-volume'),
     audioStatus: document.getElementById('audio-status'),
     exerciseStop: document.getElementById('exercise-stop'),
@@ -135,6 +148,7 @@
     exercisePhaseLabel: document.getElementById('exercise-phase-label'),
     exerciseCountdown: document.getElementById('exercise-countdown'),
     exerciseNextPhase: document.getElementById('exercise-next-phase'),
+    exerciseGuidance: document.getElementById('exercise-guidance'),
     exerciseTapHold: document.getElementById('exercise-tap-hold'),
     exerciseNeedBreathe: document.getElementById('exercise-need-breathe'),
     exercisePaused: document.getElementById('exercise-paused'),
@@ -145,6 +159,8 @@
     guidedStagePosition: document.getElementById('guided-stage-position'),
     guidedStageTitle: document.getElementById('guided-stage-title'),
     guidedStagePrompt: document.getElementById('guided-stage-prompt'),
+    guidedStageGuidance: document.getElementById('guided-stage-guidance'),
+    guidedStageNextPhase: document.getElementById('guided-stage-next-phase'),
     guidedMediaStatus: document.getElementById('guided-media-status'),
     guidedControlBar: document.getElementById('guided-control-bar'),
     guidedStop: document.getElementById('guided-stop'),
@@ -198,7 +214,13 @@
   });
 
   function localizeTechnique(tech) {
-    return I18n.localizeTechnique(tech);
+    if (!tech) return tech;
+    var localizedTechnique = I18n.localizeTechnique(tech);
+    var variationId =
+      state.techniqueVariations[tech.id] ||
+      tech.defaultVariationId ||
+      null;
+    return resolveTechniqueVariation(localizedTechnique, variationId);
   }
 
   function resolveCurrentTechnique() {
@@ -241,6 +263,7 @@
     if (state.currentTechnique && screens.duration.classList.contains('screen-active')) {
       var tech = resolveCurrentTechnique();
       elements.durationTitle.textContent = I18n.t('duration.setupTitle', { name: tech.name });
+      renderVariationOptions(tech);
       renderDurationOptions(tech);
       bindDurationPrefs();
     }
@@ -275,6 +298,8 @@
     state.ambientEnabled = prefs.ambientEnabled;
     state.ambientVolume = prefs.ambientVolume / 100;
     state.guidedDimView = prefs.guidedDimView;
+    state.techniqueVariations = Object.assign({}, prefs.techniqueVariations);
+    state.handsFreeNostril = prefs.handsFreeNostril;
     state.showCountdown = prefs.showCountdown;
     state.theme = prefs.theme;
     state.currentSessionType = prefs.lastSessionType || 'technique';
@@ -321,6 +346,8 @@
     prefs.ambientEnabled = state.ambientEnabled;
     prefs.ambientVolume = Math.round(state.ambientVolume * 100);
     prefs.guidedDimView = state.guidedDimView;
+    prefs.techniqueVariations = Object.assign({}, state.techniqueVariations);
+    prefs.handsFreeNostril = state.handsFreeNostril;
     prefs.showCountdown = state.showCountdown;
     prefs.theme = state.theme;
     prefs.locale = state.locale;
@@ -414,6 +441,7 @@
     } else if (prefs.lastRounds) {
       detail = I18n.t('continueDetail.rounds', { name: tech.name, n: prefs.lastRounds });
     }
+    if (tech.selectedVariationLabel) detail += ' · ' + tech.selectedVariationLabel;
     elements.continueLastDetail.textContent = detail;
     elements.continueLastBtn.classList.remove('hidden');
   }
@@ -484,6 +512,7 @@
       if (entry.durationMinutes) meta += ' · ' + entry.durationMinutes + ' ' + I18n.t('duration.min');
       if (entry.durationRounds) meta += ' · ' + entry.durationRounds + ' ' + I18n.t('duration.rounds');
       if (entry.elapsedMs) meta += ' · ' + formatMinutesSeconds(entry.elapsedMs);
+      if (entry.variationLabel) meta += ' · ' + entry.variationLabel;
       const entryTitle = entry.titleKey
         ? I18n.t(entry.titleKey)
         : entry.techniqueName || I18n.t('history.sessionFallback');
@@ -851,13 +880,15 @@
   function renderGuidedMetaChips(container, guidedSession) {
     if (!container || !guidedSession) return;
     container.innerHTML = '';
-    [
+    const labels = [
       I18n.t(guidedSession.durationLabelKey),
-      I18n.t('intensity.' + guidedSession.intensity),
-      I18n.t('guided.noHolds'),
-      I18n.t('guided.unpacedRest'),
-      I18n.t('guided.cueAvailability')
-    ].forEach(function (label) {
+      I18n.t('intensity.' + guidedSession.intensity)
+    ].concat(
+      (guidedSession.metaLabelKeys || []).map(function (labelKey) {
+        return I18n.t(labelKey);
+      })
+    );
+    labels.forEach(function (label) {
       const chip = document.createElement('span');
       chip.className = 'meta-chip';
       chip.textContent = label;
@@ -868,12 +899,23 @@
   function renderGuidedSessionList() {
     if (!elements.guidedSessionList) return;
     elements.guidedSessionList.innerHTML = '';
+    let previousCollectionId = null;
     GuidedSessions.GUIDED_SESSIONS.forEach(function (guidedSession) {
+      if (guidedSession.collectionId !== previousCollectionId) {
+        previousCollectionId = guidedSession.collectionId;
+        const headingItem = document.createElement('li');
+        headingItem.className = 'guided-collection-heading';
+        headingItem.textContent = I18n.t(
+          'guided.collections.' + guidedSession.collectionId
+        );
+        elements.guidedSessionList.appendChild(headingItem);
+      }
       const li = document.createElement('li');
       const card = document.createElement('button');
       card.type = 'button';
       card.className = 'technique-card guided-session-card';
       card.setAttribute('data-id', guidedSession.id);
+      card.setAttribute('aria-label', I18n.t(guidedSession.titleKey));
       card.innerHTML =
         '<p class="technique-name">' +
         escapeHtml(I18n.t(guidedSession.titleKey)) +
@@ -882,7 +924,13 @@
         '</p><div class="meta-chips"><span class="meta-chip meta-chip--gentle">' +
         escapeHtml(I18n.t(guidedSession.durationLabelKey)) +
         '</span><span class="meta-chip">' +
-        escapeHtml(I18n.t('guided.cueAvailability')) +
+        escapeHtml(
+          I18n.t(
+            guidedSession.ambientAvailable
+              ? 'guided.cueAvailability'
+              : 'guided.kundaliniIntro.silentDefault'
+          )
+        ) +
         '</span></div>';
       card.addEventListener('click', function () {
         openGuidedOverview(guidedSession);
@@ -906,7 +954,7 @@
       const detail = document.createElement('span');
       detail.className = 'guided-stage-detail';
       detail.textContent =
-        I18n.t('guided.stages.' + stage.id + '.duration') +
+        I18n.t(stage.durationLabelKey || 'guided.stages.' + stage.id + '.duration') +
         ' · ' +
         I18n.t(stage.promptKey);
       li.appendChild(name);
@@ -919,6 +967,9 @@
         'aria-checked',
         state.ambientEnabled ? 'true' : 'false'
       );
+    }
+    if (elements.guidedAudioControls) {
+      elements.guidedAudioControls.classList.toggle('hidden', !guidedSession.ambientAvailable);
     }
     if (elements.guidedAmbientVolume) {
       elements.guidedAmbientVolume.value = String(Math.round(state.ambientVolume * 100));
@@ -937,6 +988,10 @@
         inhale: selectedPace.inhaleSeconds,
         exhale: selectedPace.exhaleSeconds
       });
+    } else if (elements.guidedPaceDescription) {
+      elements.guidedPaceDescription.textContent = I18n.t(
+        'guided.kundaliniIntro.fixedPaces'
+      );
     }
     if (elements.guidedDimView) {
       elements.guidedDimView.checked = state.guidedDimView;
@@ -1003,6 +1058,7 @@
   function openGuidedOverview(guidedSession) {
     state.currentGuidedSession = guidedSession;
     state.currentSessionType = 'guided';
+    sessionMedia.setSource(guidedSession.ambientAssetPath || '');
     renderGuidedOverview(guidedSession);
     saveState();
     navigateTo('screen-guided');
@@ -1049,6 +1105,42 @@
     } else {
       elements.detailNotes.classList.add('hidden');
     }
+    if (elements.detailDemoSection) {
+      elements.detailDemoSection.classList.toggle('hidden', !tech.demoRequired);
+      if (tech.demoRequired && elements.detailDemoStatus) {
+        elements.detailDemoStatus.textContent = tech.demoAssetPath
+          ? I18n.t('detail.demoReady')
+          : I18n.t('detail.demoUnavailable');
+      }
+    }
+    if (elements.detailTraditionalContext) {
+      const context = tech.traditionalContext;
+      elements.detailTraditionalContext.classList.toggle('hidden', !context);
+      elements.detailTraditionalContext.open = false;
+      if (context) {
+        elements.detailTraditionalBody.textContent = context.body || '';
+        const sourceLabel = I18n.t('detail.source', {
+          name: context.sourceName || ''
+        });
+        elements.detailTraditionalSource.textContent = '';
+        if (context.sourceUrl) {
+          const sourceLink = document.createElement('a');
+          sourceLink.href = context.sourceUrl;
+          sourceLink.textContent = sourceLabel;
+          sourceLink.target = '_blank';
+          sourceLink.rel = 'noopener noreferrer';
+          sourceLink.setAttribute(
+            'aria-label',
+            I18n.t('detail.externalSourceAria', {
+              name: context.sourceName || ''
+            })
+          );
+          elements.detailTraditionalSource.appendChild(sourceLink);
+        } else {
+          elements.detailTraditionalSource.textContent = sourceLabel;
+        }
+      }
+    }
     renderSafetyWarningBlock(elements.detailSafetyWarning, tech);
   }
 
@@ -1078,7 +1170,40 @@
 
   function updateDurationEstimate() {
     if (!state.currentTechnique || !elements.durationEstimate) return;
-    elements.durationEstimate.textContent = buildEstimateText(state.currentTechnique);
+    elements.durationEstimate.textContent = buildEstimateText(resolveCurrentTechnique());
+  }
+
+  function renderVariationOptions(tech) {
+    if (!elements.variationFieldset || !elements.variationOptions) return;
+    const variations = tech && Array.isArray(tech.variations) ? tech.variations : [];
+    elements.variationFieldset.classList.toggle('hidden', variations.length === 0);
+    elements.variationOptions.innerHTML = '';
+    if (!variations.length) return;
+    const selectedVariationId =
+      state.techniqueVariations[tech.id] || tech.defaultVariationId || variations[0].id;
+    variations.forEach(function (variation) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'duration-option';
+      button.setAttribute('role', 'radio');
+      button.setAttribute('data-variation-id', variation.id);
+      const selected = variation.id === selectedVariationId;
+      button.setAttribute('aria-checked', selected ? 'true' : 'false');
+      button.classList.toggle('selected', selected);
+      button.textContent = variation.label;
+      button.addEventListener('click', function () {
+        state.techniqueVariations[tech.id] = variation.id;
+        saveState();
+        const resolvedTechnique = resolveCurrentTechnique();
+        elements.durationTitle.textContent = I18n.t('duration.setupTitle', {
+          name: resolvedTechnique.name
+        });
+        renderVariationOptions(resolvedTechnique);
+        renderDurationOptions(resolvedTechnique);
+        renderSafetyWarningBlock(elements.durationSafetyWarning, resolvedTechnique);
+      });
+      elements.variationOptions.appendChild(button);
+    });
   }
 
   function setDurationSelection(value, fromCustom) {
@@ -1162,6 +1287,24 @@
   }
 
   function bindDurationPrefs() {
+    if (elements.handsFreeToggleLabel && elements.durationHandsFreeNostril) {
+      const supportsHandsFreeNostril =
+        state.currentTechnique && state.currentTechnique.id === 'alternate-nostril';
+      elements.handsFreeToggleLabel.classList.toggle('hidden', !supportsHandsFreeNostril);
+      elements.durationHandsFreeNostril.checked = state.handsFreeNostril;
+      elements.durationHandsFreeNostril.setAttribute(
+        'aria-checked',
+        state.handsFreeNostril ? 'true' : 'false'
+      );
+      elements.durationHandsFreeNostril.onchange = function () {
+        state.handsFreeNostril = elements.durationHandsFreeNostril.checked;
+        elements.durationHandsFreeNostril.setAttribute(
+          'aria-checked',
+          state.handsFreeNostril ? 'true' : 'false'
+        );
+        saveState();
+      };
+    }
     if (elements.durationSound) {
       elements.durationSound.checked = state.soundEnabled;
       elements.durationSound.setAttribute('aria-checked', state.soundEnabled ? 'true' : 'false');
@@ -1238,6 +1381,7 @@
     const tech = resolveCurrentTechnique();
     if (!tech) return;
     elements.durationTitle.textContent = I18n.t('duration.setupTitle', { name: tech.name });
+    renderVariationOptions(tech);
     renderDurationOptions(tech);
     bindDurationPrefs();
     renderSafetyWarningBlock(elements.durationSafetyWarning, tech);
@@ -1245,37 +1389,69 @@
     navigateTo('screen-duration');
   }
 
+  function createTechniqueListItem(baseTechnique, showLearnLabel) {
+    const technique = localizeTechnique(baseTechnique);
+    const listItem = document.createElement('li');
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'technique-card';
+    card.setAttribute('data-id', technique.id);
+    if (showLearnLabel) {
+      card.setAttribute(
+        'aria-label',
+        technique.id === 'alternate-nostril'
+          ? I18n.t('list.learnNadiShodhana')
+          : I18n.t('list.learnTechnique', { name: technique.name })
+      );
+    }
+    const chips = document.createElement('div');
+    chips.className = 'meta-chips';
+    renderMetaChips(chips, technique);
+    if (AppStorage.isFavorite(technique.id)) {
+      const favoriteChip = document.createElement('span');
+      favoriteChip.className = 'meta-chip meta-chip--beginner';
+      favoriteChip.textContent = I18n.t('meta.favorite');
+      chips.appendChild(favoriteChip);
+    }
+    card.innerHTML =
+      '<p class="technique-name">' +
+      escapeHtml(technique.name) +
+      '</p><p class="technique-desc">' +
+      escapeHtml(technique.shortDescription) +
+      '</p>';
+    card.appendChild(chips);
+    if (showLearnLabel) {
+      const learnLabel = document.createElement('span');
+      learnLabel.className = 'technique-action-label';
+      learnLabel.textContent = I18n.t('detail.howToPractice');
+      card.appendChild(learnLabel);
+    }
+    card.addEventListener('click', function () {
+      openDetail(baseTechnique);
+    });
+    listItem.appendChild(card);
+    return listItem;
+  }
+
   function renderTechniqueList() {
     elements.techniqueList.innerHTML = '';
-    TECHNIQUES.forEach(function (baseTech) {
-      if (!techniqueMatchesFilters(baseTech)) return;
-      const tech = localizeTechnique(baseTech);
-      const li = document.createElement('li');
-      const card = document.createElement('button');
-      card.type = 'button';
-      card.className = 'technique-card';
-      card.setAttribute('data-id', tech.id);
-      const chips = document.createElement('div');
-      chips.className = 'meta-chips';
-      renderMetaChips(chips, tech);
-      if (AppStorage.isFavorite(tech.id)) {
-        const fav = document.createElement('span');
-        fav.className = 'meta-chip meta-chip--beginner';
-        fav.textContent = I18n.t('meta.favorite');
-        chips.appendChild(fav);
+    if (elements.kundaliniTechniqueList) {
+      elements.kundaliniTechniqueList.innerHTML = '';
+    }
+    TECHNIQUES.forEach(function (baseTechnique) {
+      if (
+        baseTechnique.collectionId === 'kundalini-foundations' &&
+        elements.kundaliniTechniqueList
+      ) {
+        if (techniqueMatchesFilters(baseTechnique)) {
+          elements.kundaliniTechniqueList.appendChild(
+            createTechniqueListItem(baseTechnique, true)
+          );
+        }
+        return;
       }
-      card.innerHTML =
-        '<p class="technique-name">' +
-        escapeHtml(tech.name) +
-        '</p><p class="technique-desc">' +
-        escapeHtml(tech.shortDescription) +
-        '</p>';
-      card.appendChild(chips);
-      card.addEventListener('click', function () {
-        openDetail(tech);
-      });
-      li.appendChild(card);
-      elements.techniqueList.appendChild(li);
+      if (!techniqueMatchesFilters(baseTechnique)) return;
+      elements.techniqueList.appendChild(createTechniqueListItem(baseTechnique, false));
     });
     updateContinueShortcut();
   }
@@ -1422,6 +1598,18 @@
     if (elements.exerciseSessionLeft) elements.exerciseSessionLeft.removeAttribute('aria-hidden');
     if (elements.exerciseCountdown) elements.exerciseCountdown.removeAttribute('aria-hidden');
     if (elements.exerciseNextPhase) elements.exerciseNextPhase.removeAttribute('aria-hidden');
+    if (elements.exerciseGuidance) {
+      elements.exerciseGuidance.textContent = '';
+      elements.exerciseGuidance.classList.remove('has-guidance');
+    }
+    if (elements.guidedStageGuidance) {
+      elements.guidedStageGuidance.textContent = '';
+      elements.guidedStageGuidance.classList.remove('has-guidance');
+    }
+    if (elements.guidedStageNextPhase) {
+      elements.guidedStageNextPhase.textContent = '';
+      elements.guidedStageNextPhase.setAttribute('aria-hidden', 'true');
+    }
   }
 
   function exitExerciseScreen(immediate) {
@@ -1477,13 +1665,31 @@
     elements.circleProgress.style.strokeDashoffset = String(offset);
   }
 
-  function applyExerciseSnapshot(snapshot, tech) {
+  function setElementTextIfChanged(element, text) {
+    if (!element || element.textContent === text) return;
+    element.textContent = text;
+  }
+
+  function formatCountdownSeconds(remainingSeconds, phaseDurationSeconds) {
+    if (!Number.isInteger(phaseDurationSeconds)) {
+      const roundedHalfSecond = Math.ceil(remainingSeconds * 2) / 2;
+      return Number.isInteger(roundedHalfSecond)
+        ? String(roundedHalfSecond)
+        : roundedHalfSecond.toFixed(1);
+    }
+    return String(Math.max(0, Math.ceil(remainingSeconds)));
+  }
+
+  function applyExerciseSnapshot(snapshot, tech, announcementPrefix) {
     if (!snapshot || !snapshot.phase) return;
     const p = snapshot.phase;
     elements.exercisePhaseLabel.textContent = p.label || p.type;
-    const secLeft = Math.max(0, Math.ceil(snapshot.remainingSec));
+    const secondsLabel = formatCountdownSeconds(
+      Math.max(0, snapshot.remainingSec),
+      p.durationSeconds
+    );
     if (state.showCountdown) {
-      elements.exerciseCountdown.textContent = String(secLeft);
+      elements.exerciseCountdown.textContent = secondsLabel;
       elements.exerciseCountdown.classList.remove('countdown-hidden');
     } else {
       elements.exerciseCountdown.textContent = '';
@@ -1520,9 +1726,44 @@
     }
 
     const nextHint = getNextPhaseLabel(tech, snapshot);
-    if (elements.exerciseNextPhase) {
-      elements.exerciseNextPhase.textContent = nextHint;
-      elements.exerciseNextPhase.setAttribute('aria-hidden', nextHint ? 'false' : 'true');
+    const isGuidedExercise =
+      elements.exerciseMain && elements.exerciseMain.classList.contains('guided-mode');
+    const nextPhaseElement = isGuidedExercise
+      ? elements.guidedStageNextPhase
+      : elements.exerciseNextPhase;
+    const inactiveNextPhaseElement = isGuidedExercise
+      ? elements.exerciseNextPhase
+      : elements.guidedStageNextPhase;
+    if (nextPhaseElement) {
+      setElementTextIfChanged(nextPhaseElement, nextHint);
+      nextPhaseElement.setAttribute('aria-hidden', nextHint ? 'false' : 'true');
+    }
+    if (inactiveNextPhaseElement) {
+      setElementTextIfChanged(inactiveNextPhaseElement, '');
+      inactiveNextPhaseElement.setAttribute('aria-hidden', 'true');
+    }
+    const guidanceElement = isGuidedExercise
+      ? elements.guidedStageGuidance
+      : elements.exerciseGuidance;
+    const inactiveGuidanceElement = isGuidedExercise
+      ? elements.exerciseGuidance
+      : elements.guidedStageGuidance;
+    const guidance = snapshot.guidanceSegment;
+    const guidanceText = guidance
+      ? guidance.label
+      : tech && tech.handsFreeNostril
+        ? I18n.t('exercise.handsFreeNostril')
+        : '';
+    if (guidanceElement) {
+      setElementTextIfChanged(guidanceElement, guidanceText);
+      guidanceElement.classList.toggle('has-guidance', !!guidanceText);
+      if (snapshot.guidanceChanged && guidance && !snapshot.phaseChanged) {
+        announceToScreenReader(I18n.t('exercise.guidance', { guidance: guidance.label }));
+      }
+    }
+    if (inactiveGuidanceElement) {
+      setElementTextIfChanged(inactiveGuidanceElement, '');
+      inactiveGuidanceElement.classList.remove('has-guidance');
     }
 
     setBreathVisual(snapshot);
@@ -1532,9 +1773,21 @@
       if (sig !== lastAnnouncedPhase) {
         lastAnnouncedPhase = sig;
         const label = p.label || p.type;
-        announceToScreenReader(
-          I18n.t('exercise.seconds', { label: label, count: secLeft })
-        );
+        let phaseAnnouncement = I18n.t('exercise.seconds', {
+          label: label,
+          count: secondsLabel
+        });
+        if (announcementPrefix) {
+          phaseAnnouncement = announcementPrefix + ' ' + phaseAnnouncement;
+        }
+        if (guidanceText) {
+          phaseAnnouncement +=
+            ' ' +
+            I18n.t('exercise.guidance', {
+              guidance: guidanceText
+            });
+        }
+        announceToScreenReader(phaseAnnouncement);
       }
     }
   }
@@ -1623,6 +1876,9 @@
         pendingHistoryEntry = {
           techId: tech.id,
           techniqueName: tech.name,
+          variationId: tech.selectedVariationId || null,
+          variationLabel: tech.selectedVariationLabel || null,
+          handsFreeNostril: tech.handsFreeNostril === true,
           durationMinutes: state.durationMinutes,
           durationRounds: state.durationRounds,
           elapsedMs: elapsedMs,
@@ -1777,13 +2033,9 @@
     const engine = GuidedSessionEngine.createGuidedSessionEngine({
       sessionDefinition: guidedSession,
       techniques: TECHNIQUES,
-      sessionEngine: SessionEngine
+      sessionEngine: SessionEngine,
+      resolveTechniqueVariation: resolveTechniqueVariation
     });
-    const coherentTechnique = localizeTechnique(
-      TECHNIQUES.find(function (technique) {
-        return technique.id === 'coherent';
-      })
-    );
     let tickIntervalId = null;
     let wakeLockSentinel = null;
     let ending = false;
@@ -1816,17 +2068,18 @@
 
     function setGuidedCompletionUi() {
       currentCompletionType = 'guided';
+      const reflectionEnabled = guidedSession.reflectionEnabled === true;
       if (elements.completionNoteLabel) {
-        elements.completionNoteLabel.classList.remove('hidden');
+        elements.completionNoteLabel.classList.toggle('hidden', !reflectionEnabled);
         elements.completionNoteLabel.textContent = I18n.t('guided.reflectionLabel');
       }
       if (elements.completionNote) {
-        elements.completionNote.classList.remove('hidden');
+        elements.completionNote.classList.toggle('hidden', !reflectionEnabled);
         elements.completionNote.value = '';
         elements.completionNote.placeholder = I18n.t('guided.reflectionPlaceholder');
       }
       if (elements.completionSave) {
-        elements.completionSave.classList.remove('hidden');
+        elements.completionSave.classList.toggle('hidden', !reflectionEnabled);
         elements.completionSave.textContent = I18n.t('guided.saveReflection');
       }
     }
@@ -1856,7 +2109,8 @@
         completed: true
       });
       pendingHistoryEntry = null;
-      pendingGuidedReflectionId = completionId;
+      pendingGuidedReflectionId =
+        guidedSession.reflectionEnabled === true ? completionId : null;
       sessionStats = {
         elapsedMs: elapsedMs,
         sessionLabel: I18n.t(guidedSession.titleKey)
@@ -1887,6 +2141,9 @@
       if (elements.exerciseNextPhase && state.guidedDimView) {
         elements.exerciseNextPhase.setAttribute('aria-hidden', 'true');
       }
+      if (elements.guidedStageNextPhase && state.guidedDimView) {
+        elements.guidedStageNextPhase.setAttribute('aria-hidden', 'true');
+      }
     }
 
     function applyGuidedSnapshot(snapshot) {
@@ -1899,55 +2156,99 @@
         total: guidedSession.stages.length
       });
       elements.guidedStageTitle.textContent = I18n.t(stage.titleKey);
-      elements.guidedStagePrompt.textContent = I18n.t(stage.promptKey);
+      const activePromptKey =
+        snapshot.preparingTechnique && stage.instructionPromptKey
+          ? stage.instructionPromptKey
+          : stage.promptKey;
+      elements.guidedStagePrompt.textContent = I18n.t(activePromptKey);
+      const stageAnnouncement = snapshot.stageChanged
+        ? I18n.t('guided.stageStarted', {
+            stage: I18n.t(stage.titleKey),
+            prompt: I18n.t(activePromptKey)
+          })
+        : snapshot.techniqueStarted
+          ? I18n.t(stage.promptKey)
+          : '';
       elements.exerciseSessionLeft.textContent = I18n.t('exercise.left', {
         time: formatMinutesSeconds(snapshot.stageRemainingMs)
       });
 
-      const showRestNow = stage.id === 'arrive' || stage.id === 'breathe';
+      const showRestNow = (guidedSession.skipToRestVisibleBeforeStageIds || []).includes(
+        stage.id
+      );
       elements.guidedRestNow.classList.toggle('hidden', !showRestNow);
       if (snapshot.stageChanged) {
-        if (stage.id === 'rest') {
+        const ambientStageIds = guidedSession.ambientStageIds || [];
+        if (ambientStageIds.includes(stage.id)) {
           sessionMedia.enterAmbient();
-        } else if (currentStageId === 'rest') {
+        } else if (ambientStageIds.includes(currentStageId)) {
           sessionMedia.leaveAmbient();
         }
         currentStageId = stage.id;
       }
       if (stage.type === 'technique' && snapshot.techniqueSnapshot) {
         elements.circleWrap.classList.remove('hidden');
+        const baseTechnique = TECHNIQUES.find(function (technique) {
+          return technique.id === stage.techniqueId;
+        });
+        const localizedBaseTechnique = I18n.localizeTechnique(baseTechnique);
+        const guidedTechnique = resolveTechniqueVariation(
+          localizedBaseTechnique,
+          stage.variationId || baseTechnique.defaultVariationId
+        );
         const techniqueSnapshot = Object.assign({}, snapshot.techniqueSnapshot);
-        if (coherentTechnique && coherentTechnique.phases[techniqueSnapshot.phaseIndex]) {
+        if (guidedTechnique && guidedTechnique.phases[techniqueSnapshot.phaseIndex]) {
+          const localizedPhase = guidedTechnique.phases[techniqueSnapshot.phaseIndex];
           techniqueSnapshot.phase = Object.assign(
             {},
             techniqueSnapshot.phase,
-            { label: coherentTechnique.phases[techniqueSnapshot.phaseIndex].label }
+            {
+              label: localizedPhase.label,
+              nostril: localizedPhase.nostril,
+              guidanceSegments: localizedPhase.guidanceSegments
+            }
           );
+          if (techniqueSnapshot.guidanceSegment && localizedPhase.guidanceSegments) {
+            const localizedGuidanceSegment = localizedPhase.guidanceSegments.find(function (
+              guidanceSegment
+            ) {
+              return guidanceSegment.id === techniqueSnapshot.guidanceSegment.id;
+            });
+            if (localizedGuidanceSegment) {
+              techniqueSnapshot.guidanceSegment = localizedGuidanceSegment;
+            }
+          }
         }
         if (snapshot.stageChanged && !techniqueSnapshot.phaseChanged) {
           techniqueSnapshot.phaseChanged = true;
           techniqueSnapshot.phaseSignature =
             snapshot.stageSignature + '-' + techniqueSnapshot.phaseIndex;
         }
-        applyExerciseSnapshot(techniqueSnapshot, coherentTechnique);
+        applyExerciseSnapshot(techniqueSnapshot, guidedTechnique, stageAnnouncement);
         elements.exerciseSessionLeft.textContent = I18n.t('exercise.left', {
           time: formatMinutesSeconds(snapshot.stageRemainingMs)
         });
         playSessionCue(techniqueSnapshot);
       } else {
         elements.circleWrap.classList.add('hidden');
+        elements.exercisePhaseLabel.textContent = '';
+        elements.exerciseCountdown.textContent = '';
         elements.exerciseTapHold.classList.add('hidden');
         elements.exerciseNextPhase.textContent = '';
         elements.exerciseNextPhase.setAttribute('aria-hidden', 'true');
-      }
-
-      if (snapshot.stageChanged) {
-        announceToScreenReader(
-          I18n.t('guided.stageStarted', {
-            stage: I18n.t(stage.titleKey),
-            prompt: I18n.t(stage.promptKey)
-          })
-        );
+        if (elements.guidedStageNextPhase) {
+          elements.guidedStageNextPhase.textContent = '';
+          elements.guidedStageNextPhase.setAttribute('aria-hidden', 'true');
+        }
+        if (elements.exerciseGuidance) {
+          elements.exerciseGuidance.textContent = '';
+          elements.exerciseGuidance.classList.remove('has-guidance');
+        }
+        if (elements.guidedStageGuidance) {
+          elements.guidedStageGuidance.textContent = '';
+          elements.guidedStageGuidance.classList.remove('has-guidance');
+        }
+        if (stageAnnouncement) announceToScreenReader(stageAnnouncement);
       }
       applyGuidedDimView();
     }
@@ -1986,7 +2287,9 @@
       elements.guidedControlBar.removeAttribute('inert');
       elements.guidedControlBar.removeAttribute('aria-hidden');
       unlockAudioFromUserGesture();
-      if (currentStageId === 'rest') sessionMedia.resumeAmbient();
+      if ((guidedSession.ambientStageIds || []).includes(currentStageId)) {
+        sessionMedia.resumeAmbient();
+      }
       else if (sessionMedia.isEnabled()) sessionMedia.prepareFromGesture();
       acquireWakeLock();
       announceToScreenReader(I18n.t('exercise.resumedSr'));
@@ -2076,12 +2379,25 @@
     pendingGuidedReflectionId = null;
     state.currentSessionType = 'guided';
     const readiness = getOfflineReadiness();
-    const ambientCanLoad = navigator.onLine || readiness.ambientReady;
-    sessionMedia.setEnabled(state.ambientEnabled && ambientCanLoad);
+    const ambientCanLoad =
+      state.currentGuidedSession.ambientAvailable &&
+      (navigator.onLine || readiness.ambientReady);
+    sessionMedia.setSource(state.currentGuidedSession.ambientAssetPath || '');
+    sessionMedia.setEnabled(
+      state.currentGuidedSession.ambientAvailable && state.ambientEnabled && ambientCanLoad
+    );
     sessionMedia.setVolume(state.ambientVolume);
-    if (state.ambientEnabled && ambientCanLoad) {
+    if (
+      state.currentGuidedSession.ambientAvailable &&
+      state.ambientEnabled &&
+      ambientCanLoad
+    ) {
       sessionMedia.prepareFromGesture();
-    } else if (state.ambientEnabled && elements.guidedMediaStatus) {
+    } else if (
+      state.currentGuidedSession.ambientAvailable &&
+      state.ambientEnabled &&
+      elements.guidedMediaStatus
+    ) {
       elements.guidedMediaStatus.textContent = I18n.t('guided.ambientUnavailableOffline');
       elements.guidedMediaStatus.classList.remove('hidden');
     }
@@ -2109,6 +2425,8 @@
       startInProgress = false;
       return;
     }
+    tech.handsFreeNostril =
+      tech.id === 'alternate-nostril' && state.handsFreeNostril === true;
     if (getReadyIntervalId != null) {
       clearInterval(getReadyIntervalId);
       getReadyIntervalId = null;
@@ -2219,6 +2537,9 @@
 
   AppNavigation.init({
     onScreenChange: function (screenId) {
+      if (screenId === 'detail' && state.currentTechnique) {
+        renderDetailScreen(resolveCurrentTechnique());
+      }
       showScreen('screen-' + screenId, { skipFocus: false });
     },
     onBeforeBack: handleBeforeBack

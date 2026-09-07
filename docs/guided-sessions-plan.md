@@ -173,3 +173,111 @@ Verification:
 - Qualified expert sign-off remains pending despite stale BW-004 status in [`IMPROVEMENTS.md`](../IMPROVEMENTS.md).
 - Physical iPhone audio, interruption, lock, safe-area, and VoiceOver checks remain release dependencies.
 - App icon work, deep links, reminders, stale unrelated backlog statuses, history-name relocalization for old technique entries, and unrelated theme behavior remain out of scope.
+
+## Collection: Kundalini Foundations
+
+This collection extends the prior boundary that deferred additional techniques. It preserves the completed `unwind-with-sound` session and all existing technique IDs, settings, history, and localization. Terminology, sequence design, and safety boundaries follow [`kundalini-foundations-research.md`](./kundalini-foundations-research.md).
+
+Shared architecture:
+
+- Keep [`techniques.js`](../techniques.js) authoritative. Optional `variations` resolve to cloned technique data before entering the existing session engine.
+- Persist selected variations per technique. Missing data keeps the current held Alternate Nostril pattern, preserving existing behavior.
+- Dirga uses one inhale and one exhale with timed body-awareness guidance segments; it must not reuse the physiological-sigh second inhale.
+- Traditional context is optional, attributed, localized, and explicitly separated from medical claims.
+- Visible guidance remains complete. Screen-reader announcements and optional prerecorded guidance must fail safely to text without browser speech synthesis.
+
+### KF-M1 — Foundation techniques, Learn, and Practice
+
+Status: **Done for private use (2026-09-07); public release remains gated.**
+
+Added the four localized Learn/Practice experiences, immutable variation resolution and persistence, complete-breath Dirga guidance segments, attributed traditional context, accessible controls, and history/Continue compatibility.
+Ujjayi includes the researched tutorial and timed practice with an explicit missing-demo fallback; a verified human recording, usage release, and qualified EN/PL content review remain public-release dependencies.
+
+- Extend Alternate Nostril Breathing with the Nadi Shodhana name and a selectable no-hold variation: inhale left, exhale right, inhale right, exhale left. The existing held sequence remains the compatibility default.
+- Add Equal Breathing (Sama Vritti) as a distinct no-hold practice with comfortable equal 3s/3s and 4s/4s choices. Coherent Breathing remains unchanged.
+- Add Dirga / Three-Part Breath as one smooth inhale and exhale with sequential belly-movement, lower-rib, and upper-chest awareness. Use one continuous breath animation and restrained sub-prompts.
+- Add a modern introductory, no-hold Ujjayi Learn tutorial and timed Practice. Teach a gentle, private-audible sound and release to natural breathing for strain, pain, air hunger, or dizziness.
+- Present explicit Learn and Practice actions, English/Polish localization, comfortable pacing, accessible controls, and optional attributed traditional context.
+
+Acceptance criteria:
+
+- Existing users retain held Alternate Nostril unless they deliberately select No holds; variations persist without mutating base technique definitions.
+- Equal Breathing is visibly distinct from Box and Coherent Breathing and never introduces a hold.
+- Dirga emits one inhale and one exhale cue per breath while awareness prompts advance without restarting the animation.
+- Ujjayi provides complete text/visual instruction and honestly reports whether a real human sound demonstration is available; synthetic noise is not presented as a demonstration.
+- New experiences preserve favorites, filters, Continue, immediate Stop, history, reduced motion, keyboard access, and VoiceOver semantics.
+- Copy makes no promises about awakening, detoxification, trauma release, upward energy movement, or guaranteed outcomes.
+
+Dependencies:
+
+- Review of EN/PL instructions, Sanskrit pronunciation/transliteration, pacing, and stop guidance.
+- A short original or compatibly licensed human Ujjayi demonstration with rights documentation, transcript/captions, and visual fallback.
+- Optional localized spoken cue recordings. Each media group needs truthful offline readiness and silent/text fallback.
+
+Tests:
+
+- Unit coverage for variation cloning, no-hold phase order, preference migration/defaults, guidance-segment boundaries, and duplicate cue prevention.
+- Browser coverage for collection navigation, Learn/Practice, variation persistence including Continue, Equal-versus-Coherent identity, continuous Dirga animation, Ujjayi fallback, EN/PL copy, focus, and existing-technique regressions.
+- Media/service-worker coverage for optional asset groups plus physical iPhone playback, VoiceOver, larger text, interruption, and offline launch checks.
+
+### KF-M2 — Introductory guided sequence
+
+Status: **Done for private use (2026-09-07); content review remains pending.**
+
+Added the stable `kundalini-foundations-intro` guided-session ID with Arrive, Dirga, Equal Breathing, no-hold Nadi Shodhana, and natural-breath rest; it is silent by default and isolated from Breath & Sound ambience.
+Generalized the guided renderer and engine for multiple technique IDs, selected variations, guidance segments, configured rest stages, complete breath/nostril boundaries, localized history, Pause/Resume, Rest now, and immediate Stop. Each technique stage now begins with a six-second instruction lead-in that is preserved across pause/resume.
+
+Add a new stable guided-session ID `kundalini-foundations-intro`; never rename or reuse `unwind-with-sound`.
+
+Proposed sequence:
+
+- Arrive — 1:30: supported posture, optional gaze, natural breath.
+- Dirga — 2:00: movement awareness followed by one smooth belly → ribs → upper-chest inhale wave and easy exhale.
+- Equal Breathing — 2:00: a reviewed fixed equal pace, no holds.
+- Alternate Nostril / Nadi Shodhana, no holds — about 2:00, ending on a complete left/right round.
+- Natural-breath rest — 2:00: no pacing target or predicted sensation.
+- Configured total: 10:02 including three brief instruction transitions; presented as approximately 10 minutes.
+
+Acceptance criteria:
+
+- The overview lists every stage, no-hold status, and editorial timing boundary without presenting the sequence as a kriya or treatment.
+- Technique transitions finish the active breath or nostril round. Pause freezes clocks; Rest now enters natural breathing; Stop remains immediate and saves no completion.
+- Completion uses its own ID/title key, coexists with Breath & Sound and technique records, and saves once with active elapsed time.
+- Ujjayi and Breath of Fire are absent. The sequence is silent by default apart from optional reviewed cues and does not inherit Breath & Sound ambience.
+
+Tests extend guided-engine, storage, and browser coverage for multiple technique IDs, selected variation, Dirga guidance, full-round boundaries, delayed ticks, Pause/Resume, Rest now, Stop, idempotent completion, mixed history, EN/PL copy, focus, and landscape reachability.
+
+### KF-M3 — Breath of Fire definition and advanced review
+
+Status: **Specification complete (2026-09-07); implementation remains blocked.**
+
+Recorded the lineage-specific definition, distinction from Bhastrika, demonstration requirements, clinical/teacher review gates, pacing/rest decisions that must not be invented, and required test boundaries.
+No Breath of Fire technique, session, timing protocol, or release claim was added to application code.
+
+- Attribute the candidate method specifically to 3HO's modern “Kundalini Yoga as taught by Yogi Bhajan” lineage while noting that terminology differs across traditions.
+- Keep a future Breath of Fire ID distinct from `bhastrika`. Do not inherit Bhastrika's active inhale, 30-breath rounds, exhale retention, or recovery hold.
+- Record source-described mechanics for review only: rapid equal nasal rhythm, active abdominal exhale, released/passive inhale, no pause, and relaxed upper body. Do not convert broad source ranges into an app protocol.
+- Require instructor-led audible/visual demonstration at normal pace and slow teaching breakdown, correction for reverse breathing, captions/transcript, qualifications, consent, and asset rights.
+- Require lineage-specific beginner progression and independent clinical review before selecting rate, work interval, rest interval, progression, or resumption rules. Symptoms are stop signals, never progress.
+
+Acceptance criteria for leaving specification status:
+
+- A qualified teacher for the named lineage signs off on mechanics, pace, work/rest structure, tutorial, and distinction from Bhastrika.
+- A qualified clinical reviewer signs off on contraindication/referral wording without implying universal safety outside a short exclusion list.
+- Demonstration assets, localization, captions, offline behavior, and device tests are ready.
+- Planned tests cover no inherited holds, exact reviewed timing, immediate Stop, background pause, safety acknowledgement, demo fallback, reduced motion, and abandoned-session history.
+
+### Kundalini Foundations boundaries
+
+- Prana, nadis, ida/pingala/sushumna, chakras, and kundalini may appear only as attributed traditional models, not anatomy or measurable medical mechanisms.
+- Never promise awakening, upward energy movement, chakra activation, detoxification, trauma release, nervous-system repair, treatment, or guaranteed outcomes. Never frame intense sensations as achievement.
+- Breath of Fire remains excluded from KF-M1/KF-M2 until its advanced dependencies are met.
+- Physical iPhone audio, lock-screen, interruption, VoiceOver, and Home Screen validation remain release checks.
+- The separately selected ocean replacement for Breath & Sound remains outside these milestones.
+
+### Kundalini Foundations verification
+
+- `npm run check`: passed — ESLint, 63 unit tests, and 33 Playwright WebKit tests.
+- Unit coverage verifies variation cloning/default compatibility, no-hold phase order, Equal-versus-Coherent timing, Dirga guidance boundaries, source switching, guided full-round timing, pause/rest behavior, idempotent completion, and preference normalization.
+- WebKit coverage verifies collection navigation, Learn/Practice actions, variation persistence, continuous Dirga inhale guidance, pre-technique instructions, Ujjayi fallback in EN/PL, silent introductory-session behavior, single-entry completion history, and all existing technique/guided/service-worker regressions.
+- Physical iPhone playback, VoiceOver, larger text, safe areas, interruption, lock-screen behavior, and installed-PWA launch remain unverified.

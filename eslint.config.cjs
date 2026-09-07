@@ -12,6 +12,7 @@ module.exports = [
         ...globals.browser,
         APP_VERSION: 'readonly',
         TECHNIQUES: 'readonly',
+        resolveTechniqueVariation: 'readonly',
         SAFETY: 'readonly',
         SessionEngine: 'readonly',
         GuidedSessions: 'readonly',

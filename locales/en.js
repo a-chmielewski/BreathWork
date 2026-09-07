@@ -17,6 +17,11 @@ var I18N_EN = {
     intro:
       'Choose a breathing technique. Each session includes timing cues you can follow with eyes closed.',
     techniquesHeading: 'Techniques',
+    kundaliniHeading: 'Kundalini Foundations',
+    kundaliniIntro:
+      'Learn gentle foundational practices with clear modern instructions and optional traditional context.',
+    learnTechnique: 'Learn {name}',
+    learnNadiShodhana: 'Learn Nadi Shodhana',
     continueLast: 'Continue with last settings',
     history: 'History',
     settings: 'Settings',
@@ -30,6 +35,10 @@ var I18N_EN = {
   guided: {
     listHeading: 'Guided sessions',
     listIntro: 'Settle in and follow a complete practice from arrival to rest.',
+    collections: {
+      'breath-and-sound': 'Breath & Sound',
+      'kundalini-foundations': 'Kundalini Foundations'
+    },
     backAria: 'Back to guided sessions',
     detailsAria: 'Guided session details',
     stageOverview: 'Stage overview',
@@ -75,6 +84,52 @@ var I18N_EN = {
       description:
         'A gentle practice with time to arrive, breathe steadily, rest with natural breathing, and return.',
       duration: 'About 15 min'
+    },
+    kundaliniIntro: {
+      title: 'Kundalini Foundations — Intro',
+      description:
+        'An introductory app sequence of arrival, Three-Part Breath, Equal Breathing, no-hold Alternate Nostril Breathing, and natural rest.',
+      duration: 'About 10 min',
+      editorialSequence: 'Introductory app sequence — not a traditional kriya',
+      noHoldSequence: 'No-hold paced breathing',
+      silentDefault: 'Silent by default',
+      fixedPaces: 'Comfortable fixed pacing with no holds; each stage finishes a complete breath or nostril round.',
+      stages: {
+        arrive: {
+          title: 'Arrive',
+          duration: 'About 1½ min',
+          prompt:
+            'Choose a supported posture and a comfortable gaze. Let your breath remain natural.'
+        },
+        dirga: {
+          title: 'Dirga / Three-Part Breath',
+          duration: 'About 2 min',
+          instructionPrompt:
+            'For a few natural breaths, notice movement at the belly, lower ribs, and upper chest without changing anything.',
+          prompt:
+            'Follow one smooth inhale wave through belly movement, lower ribs, and upper chest, then exhale easily.'
+        },
+        equal: {
+          title: 'Equal Breathing',
+          duration: 'About 2 min',
+          instructionPrompt:
+            'Let your hands rest and prepare for an easy equal rhythm with no pause.',
+          prompt: 'Breathe in for four and out for four without holding.'
+        },
+        nadi: {
+          title: 'Nadi Shodhana — no holds',
+          duration: 'About 2 min',
+          instructionPrompt:
+            'Choose light nostril control or keep both hands resting and visualize the changing sides.',
+          prompt:
+            'Alternate left inhale, right exhale, right inhale, and left exhale. Use a hands-free visualization if preferred.'
+        },
+        rest: {
+          title: 'Natural-breath rest',
+          duration: 'About 2 min',
+          prompt: 'Release all pacing and let your breath find its own rhythm.'
+        }
+      }
     },
     stages: {
       arrive: {
@@ -129,7 +184,16 @@ var I18N_EN = {
     phaseSequence: 'Phase sequence',
     whatToExpect: 'What to expect',
     continueSetup: 'Continue to setup',
-    techniqueDetails: 'Technique details'
+    techniqueDetails: 'Technique details',
+    traditionalContext: 'Optional traditional context',
+    traditionalDisclaimer: 'Traditional framework — not a medical claim.',
+    source: 'Source: {name}',
+    externalSourceAria: '{name} — external source; internet required',
+    demoHeading: 'Breath-sound demonstration',
+    demoUnavailable:
+      'A verified human demonstration is not installed. Use the written guidance and keep the sound quiet and comfortable.',
+    demoReady: 'A verified human breath-sound demonstration is ready.',
+    practice: 'Practice — Continue to setup'
   },
   meta: {
     beginnerFriendly: 'Beginner friendly',
@@ -163,7 +227,9 @@ var I18N_EN = {
     soundCues: 'Sound cues on phase change',
     vibration: 'Vibration on phase change',
     showCountdown: 'Show numeric countdown',
+    handsFreeNostril: 'Hands-free nostril visualization',
     cueVolume: 'Cue volume',
+    variation: 'Practice variation',
     viewSafety: 'View full safety information',
     start: 'Start'
   },
@@ -189,7 +255,9 @@ var I18N_EN = {
     seconds: '{label}, {count} seconds',
     pausedSr: 'Paused.',
     pausedBackgroundSr: 'Paused. Returned from background.',
-    resumedSr: 'Resumed.'
+    resumedSr: 'Resumed.',
+    handsFreeNostril: 'Keep both hands resting and visualize the changing nostril',
+    guidance: '{guidance}.'
   },
   completion: {
     done: 'Done',
@@ -440,7 +508,7 @@ var I18N_EN = {
       phases: [{ label: 'Inhale' }, { label: 'Exhale' }]
     },
     'alternate-nostril': {
-      name: 'Alternate Nostril Breathing',
+      name: 'Alternate Nostril Breathing (Nadi Shodhana)',
       shortDescription: 'Mental clarity, emotional balance, midday reset',
       metadata: { typicalSession: '5–10 min' },
       instructions: {
@@ -466,7 +534,130 @@ var I18N_EN = {
         { label: 'Right – Inhale' },
         { label: 'Hold' },
         { label: 'Left – Exhale' }
-      ]
+      ],
+      variations: {
+        'with-holds': { label: 'With gentle holds' },
+        'no-holds': {
+          label: 'No holds',
+          instructions: {
+            steps: [
+              'Use your right thumb to gently close your right nostril.',
+              'Inhale through the left nostril, then switch and exhale through the right.',
+              'Inhale through the right nostril, then switch and exhale through the left.',
+              'Continue smoothly without pausing. This completes one round.',
+              'Use the on-screen side cues, or follow them without using your hand if your nose or hand is uncomfortable.'
+            ],
+            phaseSequence: 'Left inhale → Right exhale → Right inhale → Left exhale',
+            notes:
+              'No breath holds. Never force air through a blocked nostril; use the hands-free visualization or return to natural breathing.'
+          },
+          phases: [
+            { label: 'Left – Inhale' },
+            { label: 'Right – Exhale' },
+            { label: 'Right – Inhale' },
+            { label: 'Left – Exhale' }
+          ]
+        }
+      },
+      traditionalContext: {
+        sourceName: 'Kripalu — Pranayama for Self-Soothing',
+        body:
+          'Yoga traditions describe nadis as subtle channels and nadi shodhana as a channel-clearing practice. This is an attributed traditional framework, not anatomy or a medical claim.'
+      }
+    },
+    'equal-breathing': {
+      name: 'Equal Breathing (Sama Vritti)',
+      shortDescription: 'A comfortable equal inhale and exhale with no holds',
+      metadata: { typicalSession: '3–10 min' },
+      instructions: {
+        posture: 'Sit or lie down with your jaw, shoulders, and belly relaxed.',
+        steps: [
+          'Inhale gently for the selected count.',
+          'Exhale for the same count, without holding after either phase.',
+          'Keep both transitions smooth and the breath volume comfortable.',
+          'Shorten the count or return to natural breathing whenever you need.'
+        ],
+        phaseSequence: 'Equal inhale → Equal exhale · No holds',
+        sensations: 'A simple, even rhythm with no pause to maintain.',
+        notes:
+          'Equal Breathing describes a 1:1 ratio. It remains distinct from rate-defined Coherent Breathing.'
+      },
+      phases: [{ label: 'Inhale' }, { label: 'Exhale' }],
+      variations: {
+        'four-count': { label: '4 in / 4 out' },
+        'three-count': {
+          label: '3 in / 3 out',
+          phases: [{ label: 'Inhale' }, { label: 'Exhale' }]
+        }
+      },
+      traditionalContext: {
+        sourceName: 'Kripalu — Pranayama for Self-Soothing',
+        body:
+          'Sama vritti is used inconsistently across modern yoga teaching. Here it means equal, comfortable inhale and exhale with no holds.'
+      }
+    },
+    dirga: {
+      name: 'Dirga (Three-Part Breath)',
+      shortDescription: 'One smooth breath with gentle belly, rib, and upper-chest awareness',
+      metadata: { typicalSession: '3–10 min' },
+      instructions: {
+        posture: 'Sit or lie down with room for your belly and lower ribs to move comfortably.',
+        steps: [
+          'Begin one gentle inhale and notice the belly soften outward.',
+          'Continue the same inhale as the lower ribs widen.',
+          'Let the upper chest receive the end of that same smooth breath without lifting the shoulders.',
+          'Exhale in one easy wave. Do not add a second sip of air.',
+          'Omit the upper-chest emphasis or return to natural breathing if the breath feels strained.'
+        ],
+        phaseSequence: 'One smooth inhale: belly → ribs → upper chest · One easy exhale',
+        sensations: 'A continuous wave of movement awareness rather than three separate breaths.',
+        notes:
+          'Air remains in the lungs; the belly cue describes movement. This is not a forceful three-part inhale or a physiological sigh.'
+      },
+      phases: [
+        {
+          label: 'Inhale smoothly',
+          guidanceSegments: [
+            { id: 'belly', at: 0, label: 'Notice the belly soften outward' },
+            { id: 'ribs', at: 0.333, label: 'Let the lower ribs widen' },
+            { id: 'upper-chest', at: 0.666, label: 'Let the upper chest receive the breath' }
+          ]
+        },
+        {
+          label: 'Exhale smoothly',
+          guidanceSegments: [{ id: 'easy-wave', at: 0, label: 'Release in one easy wave' }]
+        }
+      ],
+      traditionalContext: {
+        sourceName: 'Kripalu — How to Do Three-Part Breath',
+        body:
+          'Modern yoga teaching describes belly movement, ribs, and upper chest blended into one wave-like breath. This is traditional context, not a claim that air enters the belly.'
+      }
+    },
+    ujjayi: {
+      name: 'Ujjayi Breath',
+      shortDescription: 'A soft nasal breath with a quiet, steady throat sound',
+      metadata: { typicalSession: '3–10 min' },
+      instructions: {
+        posture: 'Sit comfortably with your jaw, throat, neck, and shoulders relaxed.',
+        steps: [
+          'With your mouth open, exhale softly as if fogging a mirror without forcing.',
+          'Keep that very light throat narrowing, close your mouth, and breathe through your nose.',
+          'Let the inhale and exhale make a quiet, even sound that is mainly audible to you.',
+          'Keep the breath smooth with no holds and no need to make it deep or loud.',
+          'Release the throat shaping and breathe naturally if you feel pain, strain, air hunger, or dizziness.'
+        ],
+        phaseSequence: 'Quiet nasal inhale → Quiet nasal exhale · No holds',
+        sensations: 'A gentle, continuous breath sound without throat pressure.',
+        notes:
+          'The demonstration recording is not installed yet. Written guidance remains available; do not imitate a harsh or theatrical sound.'
+      },
+      phases: [{ label: 'Quiet sounding inhale' }, { label: 'Quiet sounding exhale' }],
+      traditionalContext: {
+        sourceName: 'Yoga International — Ujjayi Pranayama: Victory Breath',
+        body:
+          'The app uses a modern introductory, two-nostril form without retention. Historical Ujjayi descriptions may include retention and a different exhalation pattern.'
+      }
     },
     bhastrika: {
       name: 'Bhastrika',

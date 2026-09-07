@@ -86,6 +86,39 @@ describe('AppStorage preferences', function () {
     assert.equal(prefs.ambientVolume, 0);
     assert.equal(prefs.guidedDimView, true);
   });
+
+  it('persists valid per-technique variations and ignores invalid entries', function () {
+    AppStorage.savePrefs({
+      version: 2,
+      techniqueVariations: {
+        'alternate-nostril': 'no-holds',
+        'equal-breathing': 'three-count',
+        invalid: 42
+      }
+    });
+
+    assert.deepEqual(AppStorage.getPrefs().techniqueVariations, {
+      'alternate-nostril': 'no-holds',
+      'equal-breathing': 'three-count'
+    });
+  });
+
+  it('migrates missing variation preferences to an empty compatibility map', function () {
+    localStorage.setItem(
+      'breathwork_prefs_v2',
+      JSON.stringify({ version: 2, lastTechId: 'alternate-nostril' })
+    );
+
+    assert.deepEqual(AppStorage.getPrefs().techniqueVariations, {});
+  });
+
+  it('persists the hands-free nostril preference as a boolean', function () {
+    AppStorage.savePrefs({ version: 2, handsFreeNostril: true });
+    assert.equal(AppStorage.getPrefs().handsFreeNostril, true);
+
+    AppStorage.savePrefs({ version: 2, handsFreeNostril: 'true' });
+    assert.equal(AppStorage.getPrefs().handsFreeNostril, false);
+  });
 });
 
 describe('AppStorage history', function () {

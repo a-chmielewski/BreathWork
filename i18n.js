@@ -137,6 +137,48 @@
       });
     }
 
+    if (tech.variations) {
+      var localizedVariations = overlay.variations || {};
+      result.variations = tech.variations.map(function (variation) {
+        var localizedVariation = localizedVariations[variation.id] || {};
+        var resolvedVariation = Object.assign({}, variation, localizedVariation);
+        if (localizedVariation.metadata) {
+          resolvedVariation.metadata = Object.assign(
+            {},
+            variation.metadata,
+            localizedVariation.metadata
+          );
+        }
+        if (localizedVariation.instructions) {
+          resolvedVariation.instructions = Object.assign(
+            {},
+            variation.instructions,
+            localizedVariation.instructions
+          );
+          if (localizedVariation.instructions.steps) {
+            resolvedVariation.instructions.steps = localizedVariation.instructions.steps.slice();
+          }
+        }
+        if (variation.phases) {
+          var localizedPhases = localizedVariation.phases || [];
+          resolvedVariation.phases = variation.phases.map(function (phase, index) {
+            return localizedPhases[index]
+              ? Object.assign({}, phase, localizedPhases[index])
+              : Object.assign({}, phase);
+          });
+        }
+        return resolvedVariation;
+      });
+    }
+
+    if (overlay.traditionalContext || tech.traditionalContext) {
+      result.traditionalContext = Object.assign(
+        {},
+        tech.traditionalContext,
+        overlay.traditionalContext
+      );
+    }
+
     if (overlay.holdAfterExhaleLabel) result.holdAfterExhaleLabel = overlay.holdAfterExhaleLabel;
     if (overlay.inhaleHoldLabel) result.inhaleHoldLabel = overlay.inhaleHoldLabel;
 

@@ -45,6 +45,11 @@
         <p class="section-intro" data-i18n="guided.listIntro">Settle in and follow a complete practice from arrival to rest.</p>
         <ul id="guided-session-list" class="technique-list" role="list"></ul>
       </section>
+      <section class="kundalini-list-section" aria-labelledby="kundalini-list-heading">
+        <h2 id="kundalini-list-heading" class="list-section-heading" data-i18n="list.kundaliniHeading">Kundalini Foundations</h2>
+        <p class="section-intro" data-i18n="list.kundaliniIntro">Learn gentle foundational practices with clear modern instructions and optional traditional context.</p>
+        <ul id="kundalini-technique-list" class="technique-list" role="list"></ul>
+      </section>
       <button type="button" class="continue-card hidden" id="continue-last-btn">
         <span class="continue-card-label" data-i18n="list.continueLast">Continue with last settings</span>
         <span class="continue-card-detail" id="continue-last-detail"></span>
@@ -77,7 +82,7 @@
         <ol id="guided-stage-list" class="guided-stage-list"></ol>
       </section>
       <p class="guided-posture" data-i18n="guided.posture">Sit or lie down somewhere comfortable. Keep every breath easy and return to natural breathing whenever you wish.</p>
-      <section class="guided-audio-controls" aria-labelledby="guided-audio-heading">
+      <section id="guided-audio-controls" class="guided-audio-controls" aria-labelledby="guided-audio-heading">
         <h2 id="guided-audio-heading" class="detail-heading" data-i18n="guided.audioHeading">Ambient sound</h2>
         <label class="switch-toggle">
           <input type="checkbox" id="guided-ambient-enabled" role="switch" />
@@ -142,8 +147,20 @@
         <p id="detail-sensations" class="detail-sensations"></p>
         <p id="detail-notes" class="detail-notes hidden"></p>
       </section>
+      <section id="detail-demo-section" class="detail-section hidden" aria-labelledby="detail-demo-heading">
+        <h2 id="detail-demo-heading" class="detail-heading" data-i18n="detail.demoHeading">Breath-sound demonstration</h2>
+        <p id="detail-demo-status" class="detail-notes" role="status"></p>
+      </section>
+      <details id="detail-traditional-context" class="guided-options hidden">
+        <summary data-i18n="detail.traditionalContext">Optional traditional context</summary>
+        <div class="guided-options-content">
+          <p id="detail-traditional-body"></p>
+          <p id="detail-traditional-source" class="detail-notes"></p>
+          <p class="detail-notes" data-i18n="detail.traditionalDisclaimer">Traditional framework — not a medical claim.</p>
+        </div>
+      </details>
       <div id="detail-safety-warning" class="duration-safety-warning hidden" role="note"></div>
-      <button type="button" class="btn btn-primary" id="detail-continue" data-i18n="detail.continueSetup">Continue to setup</button>
+      <button type="button" class="btn btn-primary" id="detail-continue" data-i18n="detail.practice">Practice</button>
     </main>
   </div>
 
@@ -154,6 +171,10 @@
     </header>
     <main class="main duration-main">
       <p id="duration-estimate" class="duration-estimate" role="status"></p>
+      <fieldset id="variation-fieldset" class="duration-fieldset hidden">
+        <legend id="variation-legend" class="duration-legend" data-i18n="duration.variation">Practice variation</legend>
+        <div id="variation-options" class="duration-options" role="radiogroup" aria-labelledby="variation-legend"></div>
+      </fieldset>
       <fieldset class="duration-fieldset">
         <legend id="duration-legend" class="duration-legend" data-i18n="duration.sessionLength">Session length</legend>
         <div id="duration-options" class="duration-options" role="radiogroup" aria-labelledby="duration-legend"></div>
@@ -165,6 +186,11 @@
       </div>
       <div id="duration-safety-warning" class="duration-safety-warning hidden" role="note"></div>
       <div class="pref-group">
+        <label class="switch-toggle hidden" id="hands-free-toggle-label">
+          <input type="checkbox" id="duration-hands-free-nostril" role="switch" />
+          <span class="switch-track" aria-hidden="true"></span>
+          <span class="switch-label" data-i18n="duration.handsFreeNostril">Hands-free nostril visualization</span>
+        </label>
         <label class="switch-toggle" id="sound-toggle-label">
           <input type="checkbox" id="duration-sound" role="switch" />
           <span class="switch-track" aria-hidden="true"></span>
@@ -204,6 +230,8 @@
         <p id="guided-stage-position" class="guided-stage-position"></p>
         <h2 id="guided-stage-title" class="guided-stage-title"></h2>
         <p id="guided-stage-prompt" class="guided-stage-prompt"></p>
+        <p id="guided-stage-guidance" class="exercise-guidance"></p>
+        <p id="guided-stage-next-phase" class="next-phase-hint" aria-hidden="true"></p>
         <p id="guided-media-status" class="guided-media-status hidden" role="status"></p>
       </section>
       <div class="circle-wrap" id="circle-wrap">
@@ -218,6 +246,7 @@
         </div>
       </div>
       <p id="exercise-next-phase" class="next-phase-hint" aria-hidden="true"></p>
+      <p id="exercise-guidance" class="exercise-guidance"></p>
       <div id="exercise-tap-hold" class="tap-hold hidden">
         <p class="tap-hold-text" data-i18n="exercise.holdTap">Hold your breath. Tap when you need to breathe.</p>
         <button type="button" class="btn btn-breathe" id="exercise-need-breathe" data-i18n="exercise.needToBreathe">I need to breathe</button>

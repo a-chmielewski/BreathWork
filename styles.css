@@ -196,6 +196,28 @@ select {
   margin-bottom: 1rem;
 }
 
+.kundalini-list-section {
+  margin-bottom: 1rem;
+}
+
+.guided-collection-heading {
+  margin: 0.75rem 0 0.15rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  list-style: none;
+  text-transform: uppercase;
+}
+
+.technique-action-label {
+  display: inline-block;
+  margin-top: 0.75rem;
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
 .list-section-heading {
   margin: 0 0 0.4rem;
   font-size: 1.1rem;
@@ -862,6 +884,20 @@ select {
   font-size: 0.85rem;
   color: var(--text-muted);
   text-align: center;
+}
+
+.exercise-guidance {
+  display: none;
+  max-width: 30ch;
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.4;
+  text-align: center;
+}
+
+.exercise-guidance.has-guidance {
+  display: block;
+  margin: 0.7rem auto 0;
 }
 
 .tap-hold {

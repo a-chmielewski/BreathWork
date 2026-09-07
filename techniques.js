@@ -13,6 +13,13 @@ const CONTENT_REVIEW_DEFAULT = {
   wellnessNote: 'Wellness practice only — not medical treatment.'
 };
 
+const KUNDALINI_FOUNDATIONS_REVIEW = {
+  lastReviewed: '2026-09-07',
+  reviewSource:
+    'Terminology, traditional context, and safety boundaries are documented in docs/kundalini-foundations-research.md. Qualified instructor and clinical sign-off remain pending.',
+  wellnessNote: 'Wellness practice only — not medical treatment.'
+};
+
 const TECHNIQUES = [
   {
     id: 'box',
@@ -201,14 +208,16 @@ const TECHNIQUES = [
   },
   {
     id: 'alternate-nostril',
-    name: 'Alternate Nostril Breathing',
+    name: 'Alternate Nostril Breathing (Nadi Shodhana)',
     shortDescription: 'Mental clarity, emotional balance, midday reset',
     goals: ['focus', 'calm'],
     intensity: 'gentle',
-    contentReview: { ...CONTENT_REVIEW_DEFAULT },
+    contentReview: { ...KUNDALINI_FOUNDATIONS_REVIEW },
     durationMode: 'time',
     durationLimits: { min: 3, max: 15, presets: [5, 10, 15] },
     nostrilPhases: true,
+    collectionId: 'kundalini-foundations',
+    defaultVariationId: 'with-holds',
     metadata: {
       beginnerFriendly: false,
       pace: 'slow',
@@ -236,7 +245,199 @@ const TECHNIQUES = [
       { type: 'inhale', durationSeconds: 4, label: 'Right – Inhale', nostril: 'right' },
       { type: 'hold', durationSeconds: 4, label: 'Hold' },
       { type: 'exhale', durationSeconds: 4, label: 'Left – Exhale', nostril: 'left' }
-    ]
+    ],
+    variations: [
+      {
+        id: 'with-holds',
+        label: 'With gentle holds'
+      },
+      {
+        id: 'no-holds',
+        label: 'No holds',
+        metadata: { includesHolds: false, beginnerFriendly: true },
+        instructions: {
+          steps: [
+            'Use your right thumb to gently close your right nostril.',
+            'Inhale through the left nostril, then switch and exhale through the right.',
+            'Inhale through the right nostril, then switch and exhale through the left.',
+            'Continue smoothly without pausing. This completes one round.',
+            'Use the on-screen side cues, or follow them without using your hand if your nose or hand is uncomfortable.'
+          ],
+          phaseSequence: 'Left inhale → Right exhale → Right inhale → Left exhale',
+          notes:
+            'No breath holds. Never force air through a blocked nostril; use the hands-free visualization or return to natural breathing.'
+        },
+        phases: [
+          { type: 'inhale', durationSeconds: 4, label: 'Left – Inhale', nostril: 'left' },
+          { type: 'exhale', durationSeconds: 4, label: 'Right – Exhale', nostril: 'right' },
+          { type: 'inhale', durationSeconds: 4, label: 'Right – Inhale', nostril: 'right' },
+          { type: 'exhale', durationSeconds: 4, label: 'Left – Exhale', nostril: 'left' }
+        ]
+      }
+    ],
+    traditionalContext: {
+      sourceName: 'Kripalu — Pranayama for Self-Soothing',
+      sourceUrl:
+        'https://kripalu.org/living-kripalu/pranayama-self-soothing-3-yogic-breathing-practices-cultivate-peace',
+      body:
+        'Yoga traditions describe nadis as subtle channels and nadi shodhana as a channel-clearing practice. This is an attributed traditional framework, not anatomy or a medical claim.'
+    }
+  },
+  {
+    id: 'equal-breathing',
+    name: 'Equal Breathing (Sama Vritti)',
+    shortDescription: 'A comfortable equal inhale and exhale with no holds',
+    goals: ['calm', 'focus'],
+    intensity: 'gentle',
+    contentReview: { ...KUNDALINI_FOUNDATIONS_REVIEW },
+    collectionId: 'kundalini-foundations',
+    durationMode: 'time',
+    durationLimits: { min: 3, max: 15, presets: [3, 5, 10] },
+    defaultVariationId: 'four-count',
+    metadata: {
+      beginnerFriendly: true,
+      pace: 'slow',
+      includesHolds: false,
+      typicalSession: '3–10 min',
+      nasalControl: false
+    },
+    instructions: {
+      posture: 'Sit or lie down with your jaw, shoulders, and belly relaxed.',
+      steps: [
+        'Inhale gently for the selected count.',
+        'Exhale for the same count, without holding after either phase.',
+        'Keep both transitions smooth and the breath volume comfortable.',
+        'Shorten the count or return to natural breathing whenever you need.'
+      ],
+      phaseSequence: 'Equal inhale → Equal exhale · No holds',
+      sensations: 'A simple, even rhythm with no pause to maintain.',
+      notes:
+        'Equal Breathing describes a 1:1 ratio. It remains distinct from rate-defined Coherent Breathing.'
+    },
+    phases: [
+      { type: 'inhale', durationSeconds: 4, label: 'Inhale' },
+      { type: 'exhale', durationSeconds: 4, label: 'Exhale' }
+    ],
+    variations: [
+      { id: 'four-count', label: '4 in / 4 out' },
+      {
+        id: 'three-count',
+        label: '3 in / 3 out',
+        phases: [
+          { type: 'inhale', durationSeconds: 3, label: 'Inhale' },
+          { type: 'exhale', durationSeconds: 3, label: 'Exhale' }
+        ]
+      }
+    ],
+    traditionalContext: {
+      sourceName: 'Kripalu — Pranayama for Self-Soothing',
+      sourceUrl:
+        'https://kripalu.org/living-kripalu/pranayama-self-soothing-3-yogic-breathing-practices-cultivate-peace',
+      body:
+        'Sama vritti is used inconsistently across modern yoga teaching. Here it means equal, comfortable inhale and exhale with no holds; this definition is stated rather than assumed.'
+    }
+  },
+  {
+    id: 'dirga',
+    name: 'Dirga (Three-Part Breath)',
+    shortDescription: 'One smooth breath with gentle belly, rib, and upper-chest awareness',
+    goals: ['calm', 'focus'],
+    intensity: 'gentle',
+    contentReview: { ...KUNDALINI_FOUNDATIONS_REVIEW },
+    collectionId: 'kundalini-foundations',
+    durationMode: 'time',
+    durationLimits: { min: 3, max: 15, presets: [3, 5, 10] },
+    metadata: {
+      beginnerFriendly: true,
+      pace: 'slow',
+      includesHolds: false,
+      typicalSession: '3–10 min',
+      nasalControl: false
+    },
+    instructions: {
+      posture: 'Sit or lie down with room for your belly and lower ribs to move comfortably.',
+      steps: [
+        'Begin one gentle inhale and notice the belly soften outward.',
+        'Continue the same inhale as the lower ribs widen.',
+        'Let the upper chest receive the end of that same smooth breath without lifting the shoulders.',
+        'Exhale in one easy wave. Do not add a second sip of air.',
+        'Omit the upper-chest emphasis or return to natural breathing if the breath feels strained.'
+      ],
+      phaseSequence: 'One smooth inhale: belly → ribs → upper chest · One easy exhale',
+      sensations: 'A continuous wave of movement awareness rather than three separate breaths.',
+      notes:
+        'Air remains in the lungs; the belly cue describes movement. This is not a forceful three-part inhale or a physiological sigh.'
+    },
+    phases: [
+      {
+        type: 'inhale',
+        durationSeconds: 4.5,
+        label: 'Inhale smoothly',
+        guidanceSegments: [
+          { id: 'belly', at: 0, label: 'Notice the belly soften outward' },
+          { id: 'ribs', at: 0.333, label: 'Let the lower ribs widen' },
+          { id: 'upper-chest', at: 0.666, label: 'Let the upper chest receive the breath' }
+        ]
+      },
+      {
+        type: 'exhale',
+        durationSeconds: 4.5,
+        label: 'Exhale smoothly',
+        guidanceSegments: [{ id: 'easy-wave', at: 0, label: 'Release in one easy wave' }]
+      }
+    ],
+    traditionalContext: {
+      sourceName: 'Kripalu — How to Do Three-Part Breath',
+      sourceUrl:
+        'https://kripalu.org/living-kripalu/how-do-three-part-breath-dirgha-pranayama',
+      body:
+        'Modern yoga teaching describes a sequential awareness of belly movement, ribs, and upper chest blended into one wave-like breath. This is traditional context, not a claim that air enters the belly.'
+    }
+  },
+  {
+    id: 'ujjayi',
+    name: 'Ujjayi Breath',
+    shortDescription: 'A soft nasal breath with a quiet, steady throat sound',
+    goals: ['calm', 'focus'],
+    intensity: 'gentle',
+    contentReview: { ...KUNDALINI_FOUNDATIONS_REVIEW },
+    collectionId: 'kundalini-foundations',
+    durationMode: 'time',
+    durationLimits: { min: 3, max: 15, presets: [3, 5, 10] },
+    demoRequired: true,
+    demoAssetPath: null,
+    metadata: {
+      beginnerFriendly: true,
+      pace: 'slow',
+      includesHolds: false,
+      typicalSession: '3–10 min',
+      nasalControl: true
+    },
+    instructions: {
+      posture: 'Sit comfortably with your jaw, throat, neck, and shoulders relaxed.',
+      steps: [
+        'With your mouth open, exhale softly as if fogging a mirror without forcing.',
+        'Keep that very light throat narrowing, close your mouth, and breathe through your nose.',
+        'Let the inhale and exhale make a quiet, even sound that is mainly audible to you.',
+        'Keep the breath smooth with no holds and no need to make it deep or loud.',
+        'Release the throat shaping and breathe naturally if you feel pain, strain, air hunger, or dizziness.'
+      ],
+      phaseSequence: 'Quiet nasal inhale → Quiet nasal exhale · No holds',
+      sensations: 'A gentle, continuous breath sound without throat pressure.',
+      notes:
+        'The demonstration recording is not installed yet. Written and visual guidance remains available; do not imitate a harsh or theatrical sound.'
+    },
+    phases: [
+      { type: 'inhale', durationSeconds: 4, label: 'Quiet sounding inhale' },
+      { type: 'exhale', durationSeconds: 4, label: 'Quiet sounding exhale' }
+    ],
+    traditionalContext: {
+      sourceName: 'Yoga International — Ujjayi Pranayama: Victory Breath',
+      sourceUrl:
+        'https://yogainternational.com/article/view/ujjayi-pranayama-victory-breath/',
+      body:
+        'The app uses a modern introductory, two-nostril form without retention. Historical Ujjayi descriptions may include retention and a different exhalation pattern.'
+    }
   },
   {
     id: 'bhastrika',
@@ -284,6 +485,55 @@ const TECHNIQUES = [
   }
 ];
 
+function cloneTechniqueData(value) {
+  if (Array.isArray(value)) {
+    return value.map(function (item) {
+      return cloneTechniqueData(item);
+    });
+  }
+  if (value && typeof value === 'object') {
+    return Object.keys(value).reduce(function (clone, key) {
+      clone[key] = cloneTechniqueData(value[key]);
+      return clone;
+    }, {});
+  }
+  return value;
+}
+
+function resolveTechniqueVariation(technique, variationId) {
+  if (!technique) return null;
+  var variations = Array.isArray(technique.variations) ? technique.variations : [];
+  var selected =
+    variations.find(function (variation) {
+      return variation.id === variationId;
+    }) ||
+    variations.find(function (variation) {
+      return variation.id === technique.defaultVariationId;
+    }) ||
+    null;
+  var resolved = cloneTechniqueData(technique);
+  if (!selected) return resolved;
+
+  var selectedData = cloneTechniqueData(selected);
+  resolved.selectedVariationId = selectedData.id;
+  resolved.selectedVariationLabel = selectedData.label;
+  if (selectedData.metadata) {
+    resolved.metadata = Object.assign({}, resolved.metadata, selectedData.metadata);
+  }
+  if (selectedData.instructions) {
+    resolved.instructions = Object.assign({}, resolved.instructions, selectedData.instructions);
+  }
+  if (selectedData.phases) {
+    resolved.phases = selectedData.phases;
+  }
+  return resolved;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { TECHNIQUES, CONTENT_REVIEW_DEFAULT };
+  module.exports = {
+    TECHNIQUES,
+    CONTENT_REVIEW_DEFAULT,
+    KUNDALINI_FOUNDATIONS_REVIEW,
+    resolveTechniqueVariation
+  };
 }

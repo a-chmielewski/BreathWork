@@ -87,6 +87,17 @@
     return prevType === 'inhale' || prevType === 'inhale2' ? 1 : 0;
   }
 
+  function getGuidanceSegment(info) {
+    var segments = info && info.phase && info.phase.guidanceSegments;
+    if (!Array.isArray(segments) || !segments.length || info.phaseDurationMs <= 0) return null;
+    var phaseProgress = info.elapsedInPhaseMs / info.phaseDurationMs;
+    var selected = segments[0];
+    segments.forEach(function (segment) {
+      if (Number(segment.at) <= phaseProgress) selected = segment;
+    });
+    return selected;
+  }
+
   function createSessionEngine(options) {
     var technique = options.technique;
     var durationMinutes = options.durationMinutes;
@@ -113,6 +124,7 @@
     var phaseIndex = 0;
     var phaseStartElapsedMs = 0;
     var lastPhaseSignature = '';
+    var lastGuidanceSignature = '';
 
     function getElapsedMs(nowMs) {
       if (status === SESSION_STATUS.READY) return 0;
@@ -190,6 +202,13 @@
 
     function buildSnapshot(info, nowMs, phaseChanged) {
       var elapsed = getElapsedMs(nowMs);
+      var guidanceSegment = getGuidanceSegment(info);
+      var guidanceSignature = guidanceSegment
+        ? phaseSignature(info) + '-guidance-' + guidanceSegment.id
+        : '';
+      var guidanceChanged =
+        guidanceSignature !== '' && guidanceSignature !== lastGuidanceSignature;
+      if (guidanceSignature) lastGuidanceSignature = guidanceSignature;
       return {
         status: status,
         phase: info.phase,
@@ -204,6 +223,9 @@
         progress: computeProgress(info, phaseList, totalPhasesPerCycle),
         phaseChanged: phaseChanged,
         phaseSignature: phaseSignature(info),
+        guidanceSegment: guidanceSegment,
+        guidanceChanged: guidanceChanged,
+        guidanceSignature: guidanceSignature,
         completed: false,
         paused: false,
         stopped: false
@@ -301,6 +323,7 @@
         phaseIndex = 0;
         phaseStartElapsedMs = 0;
         lastPhaseSignature = '';
+        lastGuidanceSignature = '';
         return resolveRunningSnapshot(nowMs);
       },
       tick: function (nowMs) {
@@ -344,6 +367,7 @@
         phaseIndex = 0;
         phaseStartElapsedMs = 0;
         lastPhaseSignature = '';
+        lastGuidanceSignature = '';
       }
     };
   }

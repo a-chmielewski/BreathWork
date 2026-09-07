@@ -30,6 +30,8 @@
     ambientEnabled: true,
     ambientVolume: 45,
     guidedDimView: false,
+    techniqueVariations: {},
+    handsFreeNostril: false,
     showCountdown: true,
     theme: 'system',
     locale: null,
@@ -81,6 +83,25 @@
     prefs.haptics = !!prefs.haptics;
     prefs.ambientEnabled = prefs.ambientEnabled !== false;
     prefs.guidedDimView = prefs.guidedDimView === true;
+    prefs.handsFreeNostril = prefs.handsFreeNostril === true;
+    if (
+      !prefs.techniqueVariations ||
+      typeof prefs.techniqueVariations !== 'object' ||
+      Array.isArray(prefs.techniqueVariations)
+    ) {
+      prefs.techniqueVariations = {};
+    } else {
+      prefs.techniqueVariations = Object.keys(prefs.techniqueVariations).reduce(function (
+        normalized,
+        techniqueId
+      ) {
+        var variationId = prefs.techniqueVariations[techniqueId];
+        if (typeof variationId === 'string' && variationId) {
+          normalized[techniqueId] = variationId;
+        }
+        return normalized;
+      }, {});
+    }
     var ambientVolume = parseInt(prefs.ambientVolume, 10);
     prefs.ambientVolume = Number.isFinite(ambientVolume)
       ? Math.max(0, Math.min(100, ambientVolume))

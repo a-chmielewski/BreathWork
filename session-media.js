@@ -230,6 +230,25 @@
     }
 
     return {
+      setSource: function (path) {
+        var nextSource = typeof path === 'string' ? path : '';
+        if (nextSource === source) return;
+        fadeAndPause(0, true);
+        source = nextSource;
+        lastError = null;
+        ambientStarted = false;
+        if (mediaElement) {
+          if (source) mediaElement.src = source;
+          else if (mediaElement.removeAttribute) mediaElement.removeAttribute('src');
+          if (source && mediaElement.load) {
+            try {
+              mediaElement.load();
+            } catch (_) {}
+          }
+        }
+        state = enabled ? 'idle' : 'disabled';
+        notify();
+      },
       setEnabled: function (value) {
         enabled = !!value;
         if (!enabled) {

@@ -18,6 +18,11 @@ var I18N_PL = {
     intro:
       'Wybierz technikę oddechową. Każda sesja zawiera sygnały czasowe, którym możesz podążać z zamkniętymi oczami.',
     techniquesHeading: 'Techniki',
+    kundaliniHeading: 'Podstawy Kundalini',
+    kundaliniIntro:
+      'Poznaj łagodne praktyki podstawowe z jasnymi współczesnymi instrukcjami i opcjonalnym kontekstem tradycyjnym.',
+    learnTechnique: 'Poznaj: {name}',
+    learnNadiShodhana: 'Poznaj Nadi Shodhana',
     continueLast: 'Kontynuuj z ostatnimi ustawieniami',
     history: 'Historia',
     settings: 'Ustawienia',
@@ -31,6 +36,10 @@ var I18N_PL = {
   guided: {
     listHeading: 'Sesje prowadzone',
     listIntro: 'Usiądź wygodnie i przejdź przez pełną praktykę — od przybycia do odpoczynku.',
+    collections: {
+      'breath-and-sound': 'Oddech i dźwięk',
+      'kundalini-foundations': 'Podstawy Kundalini'
+    },
     backAria: 'Wróć do sesji prowadzonych',
     detailsAria: 'Szczegóły sesji prowadzonej',
     stageOverview: 'Przebieg sesji',
@@ -76,6 +85,53 @@ var I18N_PL = {
       description:
         'Łagodna praktyka z czasem na przybycie, równy oddech, odpoczynek z naturalnym oddechem i powrót.',
       duration: 'Około 15 min'
+    },
+    kundaliniIntro: {
+      title: 'Podstawy Kundalini — Wprowadzenie',
+      description:
+        'Wprowadzająca sekwencja aplikacji: przybycie, oddech trzyczęściowy, równy oddech, naprzemienny oddech bez zatrzymań i naturalny odpoczynek.',
+      duration: 'Około 10 min',
+      editorialSequence: 'Sekwencja wprowadzająca aplikacji — nie tradycyjna krija',
+      noHoldSequence: 'Oddech w rytmie bez wstrzymywania',
+      silentDefault: 'Domyślnie bez dźwięku',
+      fixedPaces:
+        'Komfortowe stałe tempo bez wstrzymywania; każdy etap kończy pełny oddech lub rundę nozdrzy.',
+      stages: {
+        arrive: {
+          title: 'Przybycie',
+          duration: 'Około 1½ min',
+          prompt:
+            'Wybierz podpartą pozycję i komfortowy kierunek wzroku. Pozwól oddechowi pozostać naturalnym.'
+        },
+        dirga: {
+          title: 'Dirga / Oddech trzyczęściowy',
+          duration: 'Około 2 min',
+          instructionPrompt:
+            'Przez kilka naturalnych oddechów zauważaj ruch brzucha, dolnych żeber i górnej klatki piersiowej, niczego nie zmieniając.',
+          prompt:
+            'Podążaj za jednym płynnym wdechem przez ruch brzucha, dolne żebra i górną klatkę, potem łatwo wydychaj.'
+        },
+        equal: {
+          title: 'Równy oddech',
+          duration: 'Około 2 min',
+          instructionPrompt:
+            'Oprzyj dłonie i przygotuj się na łagodny, równy rytm bez pauzy.',
+          prompt: 'Wdychaj przez cztery i wydychaj przez cztery bez wstrzymywania.'
+        },
+        nadi: {
+          title: 'Nadi Shodhana — bez wstrzymywania',
+          duration: 'Około 2 min',
+          instructionPrompt:
+            'Wybierz lekkie zamykanie nozdrzy albo oprzyj obie dłonie i wyobrażaj sobie zmianę stron.',
+          prompt:
+            'Naprzemiennie: wdech lewym, wydech prawym, wdech prawym i wydech lewym. Jeśli wolisz, użyj wizualizacji bez dłoni.'
+        },
+        rest: {
+          title: 'Odpoczynek z naturalnym oddechem',
+          duration: 'Około 2 min',
+          prompt: 'Puść całe tempo i pozwól oddechowi znaleźć własny rytm.'
+        }
+      }
     },
     stages: {
       arrive: {
@@ -130,7 +186,16 @@ var I18N_PL = {
     phaseSequence: 'Sekwencja faz',
     whatToExpect: 'Czego się spodziewać',
     continueSetup: 'Przejdź do ustawień',
-    techniqueDetails: 'Szczegóły techniki'
+    techniqueDetails: 'Szczegóły techniki',
+    traditionalContext: 'Opcjonalny kontekst tradycyjny',
+    traditionalDisclaimer: 'Ramy tradycyjne — nie twierdzenie medyczne.',
+    source: 'Źródło: {name}',
+    externalSourceAria: '{name} — źródło zewnętrzne; wymaga internetu',
+    demoHeading: 'Demonstracja dźwięku oddechu',
+    demoUnavailable:
+      'Zweryfikowana ludzka demonstracja nie jest zainstalowana. Korzystaj z instrukcji pisemnych i utrzymuj cichy, komfortowy dźwięk.',
+    demoReady: 'Zweryfikowana ludzka demonstracja dźwięku oddechu jest gotowa.',
+    practice: 'Praktykuj — przejdź do ustawień'
   },
   meta: {
     beginnerFriendly: 'Dla początkujących',
@@ -165,7 +230,9 @@ var I18N_PL = {
     soundCues: 'Dźwięk przy zmianie fazy',
     vibration: 'Wibracja przy zmianie fazy',
     showCountdown: 'Pokaż odliczanie numeryczne',
+    handsFreeNostril: 'Wizualizacja przepływu bez używania dłoni',
     cueVolume: 'Głośność sygnałów',
+    variation: 'Wariant praktyki',
     viewSafety: 'Pełne informacje o bezpieczeństwie',
     start: 'Start'
   },
@@ -191,7 +258,9 @@ var I18N_PL = {
     seconds: '{label}, {count} sekund',
     pausedSr: 'Wstrzymano.',
     pausedBackgroundSr: 'Wstrzymano. Powrót z tła.',
-    resumedSr: 'Wznowiono.'
+    resumedSr: 'Wznowiono.',
+    handsFreeNostril: 'Trzymaj obie dłonie oparte i wyobrażaj sobie zmianę nozdrza',
+    guidance: '{guidance}.'
   },
   completion: {
     done: 'Gotowe',
@@ -448,7 +517,7 @@ var I18N_PL = {
       phases: [{ label: 'Wdech' }, { label: 'Wydech' }]
     },
     'alternate-nostril': {
-      name: 'Oddech naprzemienny przez nozdrza',
+      name: 'Oddech naprzemienny przez nozdrza (Nadi Shodhana)',
       shortDescription: 'Jasność umysłu, równowaga emocjonalna, reset w ciągu dnia',
       metadata: { typicalSession: '5–10 min' },
       instructions: {
@@ -472,7 +541,130 @@ var I18N_PL = {
         { label: 'Prawe – Wdech' },
         { label: 'Wstrzymaj' },
         { label: 'Lewe – Wydech' }
-      ]
+      ],
+      variations: {
+        'with-holds': { label: 'Z łagodnym wstrzymywaniem' },
+        'no-holds': {
+          label: 'Bez wstrzymywania',
+          instructions: {
+            steps: [
+              'Kciukiem prawej dłoni delikatnie zamknij prawe nozdrze.',
+              'Wdychaj przez lewe nozdrze, potem zmień stronę i wydychaj przez prawe.',
+              'Wdychaj przez prawe nozdrze, potem zmień stronę i wydychaj przez lewe.',
+              'Kontynuuj płynnie bez pauzy. To jedna runda.',
+              'Podążaj za wskazówkami stron na ekranie albo wyobrażaj sobie zmianę bez używania dłoni, jeśli nos lub dłoń są niewygodne.'
+            ],
+            phaseSequence: 'Wdech lewy → Wydech prawy → Wdech prawy → Wydech lewy',
+            notes:
+              'Bez wstrzymywania. Nie wymuszaj przepływu przez zatkane nozdrze; użyj wizualizacji bez dłoni lub wróć do naturalnego oddechu.'
+          },
+          phases: [
+            { label: 'Lewe – Wdech' },
+            { label: 'Prawe – Wydech' },
+            { label: 'Prawe – Wdech' },
+            { label: 'Lewe – Wydech' }
+          ]
+        }
+      },
+      traditionalContext: {
+        sourceName: 'Kripalu — Pranayama for Self-Soothing',
+        body:
+          'Tradycje jogi opisują nadi jako subtelne kanały, a nadi shodhana jako praktykę ich oczyszczania. To przypisane ramy tradycyjne, nie anatomia ani twierdzenie medyczne.'
+      }
+    },
+    'equal-breathing': {
+      name: 'Równy oddech (Sama Vritti)',
+      shortDescription: 'Komfortowy, równy wdech i wydech bez wstrzymywania',
+      metadata: { typicalSession: '3–10 min' },
+      instructions: {
+        posture: 'Usiądź lub połóż się z rozluźnioną szczęką, ramionami i brzuchem.',
+        steps: [
+          'Wdychaj delikatnie przez wybraną liczbę sekund.',
+          'Wydychaj przez tyle samo sekund, bez wstrzymywania po żadnej fazie.',
+          'Zachowaj płynne przejścia i komfortową objętość oddechu.',
+          'Skróć liczenie lub wróć do naturalnego oddechu, kiedy potrzebujesz.'
+        ],
+        phaseSequence: 'Równy wdech → Równy wydech · Bez wstrzymywania',
+        sensations: 'Prosty, równy rytm bez pauzy do utrzymania.',
+        notes:
+          'Równy oddech oznacza proporcję 1:1. Pozostaje odrębny od Oddechu spójnego określonego tempem.'
+      },
+      phases: [{ label: 'Wdech' }, { label: 'Wydech' }],
+      variations: {
+        'four-count': { label: 'Wdech 4 / wydech 4' },
+        'three-count': {
+          label: 'Wdech 3 / wydech 3',
+          phases: [{ label: 'Wdech' }, { label: 'Wydech' }]
+        }
+      },
+      traditionalContext: {
+        sourceName: 'Kripalu — Pranayama for Self-Soothing',
+        body:
+          'Nazwa sama vritti jest używana różnie we współczesnym nauczaniu jogi. Tutaj oznacza równy, komfortowy wdech i wydech bez wstrzymywania.'
+      }
+    },
+    dirga: {
+      name: 'Dirga (Oddech trzyczęściowy)',
+      shortDescription: 'Jeden płynny oddech ze świadomością brzucha, żeber i górnej klatki',
+      metadata: { typicalSession: '3–10 min' },
+      instructions: {
+        posture: 'Usiądź lub połóż się tak, aby brzuch i dolne żebra mogły poruszać się swobodnie.',
+        steps: [
+          'Rozpocznij jeden łagodny wdech i zauważ, jak brzuch miękko się unosi.',
+          'Kontynuuj ten sam wdech, pozwalając dolnym żebrom się rozszerzyć.',
+          'Pozwól górnej części klatki przyjąć koniec tego samego płynnego wdechu bez unoszenia ramion.',
+          'Wydychaj jedną łatwą falą. Nie dodawaj drugiego wdechu.',
+          'Pomiń akcent górnej klatki lub wróć do naturalnego oddechu, jeśli pojawia się wysiłek.'
+        ],
+        phaseSequence: 'Jeden płynny wdech: brzuch → żebra → górna klatka · Jeden łatwy wydech',
+        sensations: 'Ciągła fala świadomości ruchu, a nie trzy oddzielne oddechy.',
+        notes:
+          'Powietrze pozostaje w płucach; wskazówka brzucha opisuje ruch. To nie jest wymuszony potrójny wdech ani westchnienie fizjologiczne.'
+      },
+      phases: [
+        {
+          label: 'Płynny wdech',
+          guidanceSegments: [
+            { id: 'belly', at: 0, label: 'Zauważ miękkie uniesienie brzucha' },
+            { id: 'ribs', at: 0.333, label: 'Pozwól dolnym żebrom się rozszerzyć' },
+            { id: 'upper-chest', at: 0.666, label: 'Pozwól górnej klatce przyjąć oddech' }
+          ]
+        },
+        {
+          label: 'Płynny wydech',
+          guidanceSegments: [{ id: 'easy-wave', at: 0, label: 'Wypuść powietrze jedną łatwą falą' }]
+        }
+      ],
+      traditionalContext: {
+        sourceName: 'Kripalu — How to Do Three-Part Breath',
+        body:
+          'Współczesne nauczanie jogi opisuje ruch brzucha, żeber i górnej klatki połączony w jeden falisty oddech. To kontekst tradycyjny, nie twierdzenie, że powietrze trafia do brzucha.'
+      }
+    },
+    ujjayi: {
+      name: 'Oddech Ujjayi',
+      shortDescription: 'Cichy oddech przez nos z łagodnym, stałym dźwiękiem gardła',
+      metadata: { typicalSession: '3–10 min' },
+      instructions: {
+        posture: 'Usiądź wygodnie z rozluźnioną szczęką, gardłem, szyją i ramionami.',
+        steps: [
+          'Z otwartymi ustami wydychaj miękko jak przy zaparowywaniu lustra, bez wysiłku.',
+          'Zachowaj bardzo lekkie zwężenie gardła, zamknij usta i oddychaj przez nos.',
+          'Niech wdech i wydech wydają cichy, równy dźwięk słyszalny głównie dla ciebie.',
+          'Oddychaj płynnie, bez wstrzymywania i bez potrzeby pogłębiania lub pogłaśniania oddechu.',
+          'Zwolnij gardło i wróć do naturalnego oddechu przy bólu, napięciu, braku powietrza lub zawrotach głowy.'
+        ],
+        phaseSequence: 'Cichy wdech przez nos → Cichy wydech przez nos · Bez wstrzymywania',
+        sensations: 'Łagodny, ciągły dźwięk oddechu bez nacisku w gardle.',
+        notes:
+          'Nagranie demonstracyjne nie jest jeszcze zainstalowane. Instrukcje pisemne pozostają dostępne; nie naśladuj ostrego ani teatralnego dźwięku.'
+      },
+      phases: [{ label: 'Cichy dźwięczny wdech' }, { label: 'Cichy dźwięczny wydech' }],
+      traditionalContext: {
+        sourceName: 'Yoga International — Ujjayi Pranayama: Victory Breath',
+        body:
+          'Aplikacja używa współczesnej formy wprowadzającej przez oba nozdrza, bez zatrzymania. Historyczne opisy Ujjayi mogą obejmować retencję i inny wzorzec wydechu.'
+      }
     },
     bhastrika: {
       name: 'Bhastrika',

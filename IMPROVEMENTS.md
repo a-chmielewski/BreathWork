@@ -44,14 +44,14 @@ This backlog is based on a review of `index.html`, `styles.css`, `app.js`, `tech
   - Acceptance: these warnings are presented before the first risky session, are readable by a screen reader, and are not hidden only in the README.
   - **Done (2026-07-14):** Added `safety.js`, list-screen notice, safety modal with one-time acknowledgement, technique warnings on the duration screen, and a prominent emergency Stop control during sessions.
 
-- [x] **BW-004 — Have every technique and health claim reviewed by a qualified expert.**
+- [ ] **BW-004 — Have every technique and health claim reviewed by a qualified expert.**
   - Verify phase order, pace, hold behavior, round count, and duration choices for all seven techniques.
   - Pay special attention to the 5–15 minute 4-7-8 presets, the Bhastrika sequence, the second physiological-sigh inhale, and the tap-ended exhale holds.
   - Rewrite claims such as "panic wave," "HRV improvements," "mental toughness," and "cold exposure prep" into neutral, supportable language.
   - Clearly separate wellness guidance from medical treatment and add source/last-reviewed metadata to technique definitions.
   - If released publicly, check whether the "Wim Hof Method" name/content needs permission or attribution.
   - Acceptance: each technique has a documented reviewer/source and the UI makes no unsupported treatment or outcome claim.
-  - **Done (2026-07-14):** Rewrote technique descriptions, added `contentReview` metadata to all seven techniques, included wellness disclaimers and Wim Hof attribution in safety copy. Qualified expert sign-off remains pending before public release.
+  - **Partial (2026-09-07):** Technique descriptions use neutral wellness language, include `contentReview` metadata, and expose safety/attribution copy. Qualified EN/PL, Sanskrit, protocol, and safety sign-off remains pending before public release.
 
 - [x] **BW-005 — Make installation and offline use work from a subdirectory.**
   - Change the manifest `start_url` from `/` to a scope-relative value such as `./` and explicitly set a compatible `scope` and stable `id`.

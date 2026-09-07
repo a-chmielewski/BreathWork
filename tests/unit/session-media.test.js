@@ -27,6 +27,10 @@ MockAudio.prototype.pause = function () {
   this.paused = true;
   this.pauseCount++;
 };
+MockAudio.prototype.removeAttribute = function (name) {
+  if (name === 'src') this.src = '';
+};
+MockAudio.prototype.load = function () {};
 
 function MockAudioContext() {
   this.currentTime = 0;
@@ -102,6 +106,17 @@ function createPlayer(overrides) {
 }
 
 describe('session-media lifecycle', function () {
+  it('switches session sources and supports a silent session source', async function () {
+    const harness = createPlayer();
+    await harness.player.prepareFromGesture();
+    harness.player.setSource('second.m4a');
+    assert.equal(harness.audio.src, 'second.m4a');
+    assert.equal(harness.player.getState(), 'idle');
+    harness.player.setSource('');
+    assert.equal(harness.audio.src, '');
+    assert.equal(harness.player.getState(), 'idle');
+  });
+
   it('primes muted from a gesture and reuses one audio context', async function () {
     const harness = createPlayer();
     assert.equal(await harness.player.prepareFromGesture(), true);

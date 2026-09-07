@@ -1,6 +1,6 @@
 importScripts('./offline-assets.js');
 
-const APP_VERSION = '1.9.1';
+const APP_VERSION = '2.0.0';
 const CACHE_NAME = 'breathwork-' + APP_VERSION;
 const MEDIA_CACHE_NAME = 'breathwork-media-' + APP_VERSION;
 

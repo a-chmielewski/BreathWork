@@ -6,12 +6,14 @@ These budgets guide releases for the Breathwork PWA shell on the supported devic
 
 | Asset group | Budget | Current measurement |
 |-------------|--------|---------------------|
-| App shell JS | ≤ 250 KB raw / ≤ 80 KB gzip | 225,821 bytes raw / 55,277 bytes gzip across 18 files |
-| App shell CSS | ≤ 32 KB raw / ≤ 8 KB gzip | 28,169 bytes raw / 5,391 bytes gzip |
+| App shell JS | ≤ 300 KB raw / ≤ 80 KB gzip | 284,454 bytes raw / 67,166 bytes gzip across 18 files |
+| App shell CSS | ≤ 32 KB raw / ≤ 8 KB gzip | 30,417 bytes raw / 5,583 bytes gzip |
 | Icons (PNG + SVG) | ≤ 15 KB raw | Generated via `scripts/generate-icons.py` |
 | Optional ambient audio | ≤ 4.5 MB | 4,124,424-byte, 7:30 AAC file cached separately from the required app shell |
 
 ## Startup
+
+The raw JavaScript ceiling was raised from 250 KB to 300 KB after adding the bilingual Kundalini Foundations instruction and guidance content. The compressed transfer ceiling remains unchanged.
 
 | Metric | Budget |
 |--------|--------|

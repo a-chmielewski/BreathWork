@@ -22,12 +22,16 @@
     var sessionDefinition = options.sessionDefinition;
     var techniques = options.techniques || [];
     var sessionEngineApi = options.sessionEngine;
+    var variationResolver = options.resolveTechniqueVariation;
 
     if (!sessionDefinition || !Array.isArray(sessionDefinition.stages) || !sessionDefinition.stages.length) {
       throw new Error('A guided session with at least one stage is required.');
     }
     if (!sessionEngineApi || !sessionEngineApi.createSessionEngine) {
       throw new Error('SessionEngine is required.');
+    }
+    if (typeof variationResolver !== 'function') {
+      throw new Error('resolveTechniqueVariation is required.');
     }
 
     var status = STATUS.READY;
@@ -38,6 +42,7 @@
     var pausedElapsedMs = 0;
     var completionElapsedMs = null;
     var techniqueEngine = null;
+    var techniqueStarted = false;
     var lastEmittedStageIndex = -1;
     var restEntryReason = null;
     var completedStageIds = [];
@@ -63,25 +68,24 @@
     }
 
     function createTechniqueEngine(stage) {
-          var sourceTechnique = getTechnique(stage.techniqueId);
-          if (!sourceTechnique) {
+      var sourceTechnique = getTechnique(stage.techniqueId);
+      if (!sourceTechnique) {
         throw new Error('Unknown guided-session technique: ' + stage.techniqueId);
       }
-          var technique = Object.assign({}, sourceTechnique, {
-            phases: (sourceTechnique.phases || []).map(function (phase) {
-              return Object.assign({}, phase);
-            })
-          });
-          var paceOptions = sessionDefinition.paceOptions || [];
-          var pace = paceOptions.find(function (option) {
-            return option.id === stage.paceId;
-          });
-          if (pace) {
-            technique.phases.forEach(function (phase) {
-              if (phase.type === 'inhale') phase.durationSeconds = pace.inhaleSeconds;
-              if (phase.type === 'exhale') phase.durationSeconds = pace.exhaleSeconds;
-            });
-          }
+      var technique = variationResolver(
+        sourceTechnique,
+        stage.variationId || sourceTechnique.defaultVariationId
+      );
+      var paceOptions = sessionDefinition.paceOptions || [];
+      var pace = paceOptions.find(function (option) {
+        return option.id === stage.paceId;
+      });
+      if (pace) {
+        technique.phases.forEach(function (phase) {
+          if (phase.type === 'inhale') phase.durationSeconds = pace.inhaleSeconds;
+          if (phase.type === 'exhale') phase.durationSeconds = pace.exhaleSeconds;
+        });
+      }
       return sessionEngineApi.createSessionEngine({
         technique: technique,
         durationMinutes: stage.durationMinutes,
@@ -91,10 +95,15 @@
 
     function enterCurrentStage() {
       var stage = sessionDefinition.stages[stageIndex];
+      if (techniqueEngine) techniqueEngine.cleanup();
       techniqueEngine = null;
+      techniqueStarted = false;
       if (stage && stage.type === 'technique') {
         techniqueEngine = createTechniqueEngine(stage);
-        techniqueEngine.start(activeTimeToWallTime(stageStartedAtActiveMs));
+        if (!stage.instructionDurationMs) {
+          techniqueEngine.start(activeTimeToWallTime(stageStartedAtActiveMs));
+          techniqueStarted = true;
+        }
       }
     }
 
@@ -102,7 +111,10 @@
       var stage = sessionDefinition.stages[stageIndex];
       if (!stage) return 0;
       if (stage.type === 'technique') {
-        return techniqueEngine ? techniqueEngine.getEffectiveDurationMs() : 0;
+        return (
+          Math.max(0, stage.instructionDurationMs || 0) +
+          (techniqueEngine ? techniqueEngine.getEffectiveDurationMs() : 0)
+        );
       }
       return Math.max(0, stage.durationMs || 0);
     }
@@ -150,7 +162,12 @@
         sessionElapsedMs: elapsedMs,
         stageChanged: false,
         stageSignature: sessionDefinition.id + '-' + stageIndex,
-        restEntryReason: restEntryReason
+        preparingTechnique:
+          stage.type === 'technique' &&
+          stageElapsedMs < Math.max(0, stage.instructionDurationMs || 0),
+        restEntryReason: restEntryReason,
+        completedStageIds: completedStageIds.slice(),
+        skippedStageIds: skippedStageIds.slice()
       };
     }
 
@@ -181,8 +198,17 @@
       var stageDurationMs = getCurrentStageDurationMs();
       var stageElapsedMs = Math.max(0, activeElapsedMs - stageStartedAtActiveMs);
       var techniqueSnapshot = null;
+      var techniqueStartedThisTick = false;
       if (techniqueEngine) {
-        techniqueSnapshot = techniqueEngine.tick(nowMs);
+        var instructionDurationMs = Math.max(0, stage.instructionDurationMs || 0);
+        if (!techniqueStarted && stageElapsedMs >= instructionDurationMs) {
+          techniqueEngine.start(
+            activeTimeToWallTime(stageStartedAtActiveMs + instructionDurationMs)
+          );
+          techniqueStarted = true;
+          techniqueStartedThisTick = true;
+        }
+        if (techniqueStarted) techniqueSnapshot = techniqueEngine.tick(nowMs);
       }
       var stageChanged = stageIndex !== lastEmittedStageIndex;
       lastEmittedStageIndex = stageIndex;
@@ -200,7 +226,11 @@
         stageChanged: stageChanged,
         stageSignature: sessionDefinition.id + '-' + stageIndex,
         techniqueSnapshot: techniqueSnapshot,
-        restEntryReason: restEntryReason
+        preparingTechnique: stage.type === 'technique' && !techniqueStarted,
+        techniqueStarted: techniqueStartedThisTick,
+        restEntryReason: restEntryReason,
+        completedStageIds: completedStageIds.slice(),
+        skippedStageIds: skippedStageIds.slice()
       };
     }
 
@@ -247,14 +277,14 @@
       pause: function (nowMs) {
         if (status !== STATUS.RUNNING) return false;
         pausedAtMs = nowMs;
-        if (techniqueEngine) techniqueEngine.pause(nowMs);
+        if (techniqueEngine && techniqueStarted) techniqueEngine.pause(nowMs);
         status = STATUS.PAUSED;
         return true;
       },
       resume: function (nowMs) {
         if (status !== STATUS.PAUSED || pausedAtMs == null) return false;
         pausedElapsedMs += nowMs - pausedAtMs;
-        if (techniqueEngine) techniqueEngine.resume(nowMs);
+        if (techniqueEngine && techniqueStarted) techniqueEngine.resume(nowMs);
         pausedAtMs = null;
         status = STATUS.RUNNING;
         return true;
@@ -262,7 +292,11 @@
       skipToRest: function (nowMs) {
         if (status !== STATUS.RUNNING && status !== STATUS.PAUSED) return null;
         var restIndex = sessionDefinition.stages.findIndex(function (stage) {
-          return stage.id === 'rest' || stage.naturalBreathing === true;
+          return (
+            stage.id === sessionDefinition.restStageId ||
+            (!sessionDefinition.restStageId &&
+              (stage.id === 'rest' || stage.naturalBreathing === true))
+          );
         });
         if (restIndex < 0 || stageIndex >= restIndex) return null;
         var activeElapsedMs = getActiveElapsedMs(nowMs);
@@ -286,6 +320,7 @@
       cleanup: function () {
         if (techniqueEngine) techniqueEngine.cleanup();
         techniqueEngine = null;
+        techniqueStarted = false;
         status = STATUS.STOPPED;
         pausedAtMs = null;
       }
