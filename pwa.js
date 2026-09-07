@@ -5,6 +5,7 @@
 
   var swRegistration = null;
   var offlineReady = false;
+  var ambientOfflineReady = false;
   var updateAvailable = false;
   var pendingReload = false;
 
@@ -33,25 +34,35 @@
     el.classList.toggle('hidden', hidden);
   }
 
-  function requiredAssetPaths() {
-    return ['./index.html', './app.js', './styles.css', './manifest.json'];
-  }
-
-  async function verifyOfflineReady() {
+  async function verifyAssetGroup(cacheName, assetPaths) {
     if (!('caches' in window)) return false;
     var names = await caches.keys();
-    var cacheName = names.find(function (name) {
-      return name.indexOf('breathwork-') === 0;
-    });
-    if (!cacheName) return false;
+    if (names.indexOf(cacheName) === -1) return false;
     var cache = await caches.open(cacheName);
-    var keys = await cache.keys();
-    return requiredAssetPaths().every(function (asset) {
-      var expectedPath = new URL(asset, window.location.href).pathname;
-      return keys.some(function (req) {
-        return new URL(req.url).pathname === expectedPath;
-      });
+    var responses = await Promise.all(
+      assetPaths.map(function (asset) {
+        return cache.match(new URL(asset, window.location.href).href);
+      })
+    );
+    return responses.every(function (response) {
+      return !!response && response.ok;
     });
+  }
+
+  function verifyOfflineReady() {
+    if (!window.OfflineAssets) return Promise.resolve(false);
+    return verifyAssetGroup(
+      'breathwork-' + APP_VERSION,
+      window.OfflineAssets.SHELL_ASSET_PATHS
+    );
+  }
+
+  function verifyAmbientOfflineReady() {
+    if (!window.OfflineAssets) return Promise.resolve(false);
+    return verifyAssetGroup(
+      'breathwork-media-' + APP_VERSION,
+      window.OfflineAssets.OPTIONAL_MEDIA_PATHS
+    );
   }
 
   function renderStatusText() {
@@ -73,6 +84,10 @@
       parts.push(t('pwa.readyOffline'));
     } else if ('serviceWorker' in navigator) {
       parts.push(t('pwa.preparingOffline'));
+    }
+
+    if (ambientOfflineReady) {
+      parts.push(t('pwa.ambientReadyOffline'));
     }
 
     if (updateAvailable) {
@@ -117,29 +132,44 @@
     showInstallHintIfRelevant();
   }
 
-  function markOfflineReady(ready) {
+  function notifyOfflineStatus() {
+    window.dispatchEvent(
+      new CustomEvent('breathwork:offline-status', {
+        detail: {
+          shellReady: offlineReady,
+          ambientReady: ambientOfflineReady
+        }
+      })
+    );
+  }
+
+  function markOfflineReady(ready, ambientReady) {
     offlineReady = ready;
+    ambientOfflineReady = ambientReady;
     try {
       localStorage.setItem(OFFLINE_READY_KEY, ready ? '1' : '0');
     } catch (_) {}
     refreshStatus();
+    notifyOfflineStatus();
   }
 
   async function evaluateOfflineReady() {
     if (!swRegistration) {
-      markOfflineReady(false);
+      markOfflineReady(false, false);
       return;
     }
     for (var attempt = 0; attempt < 12; attempt++) {
-      if (await verifyOfflineReady()) {
-        markOfflineReady(true);
+      var readiness = await Promise.all([verifyOfflineReady(), verifyAmbientOfflineReady()]);
+      if (readiness[0] && readiness[1]) {
+        markOfflineReady(true, true);
         return;
       }
+      markOfflineReady(readiness[0], readiness[1]);
       await new Promise(function (resolve) {
         window.setTimeout(resolve, 500);
       });
     }
-    markOfflineReady(false);
+    markOfflineReady(await verifyOfflineReady(), await verifyAmbientOfflineReady());
   }
 
   function syncUpdateBannerLayout() {
@@ -221,6 +251,9 @@
         watchWaitingWorker(swRegistration.installing);
       });
       await navigator.serviceWorker.ready;
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'CACHE_OPTIONAL_MEDIA' });
+      }
       await evaluateOfflineReady();
     } catch (err) {
       if (window.AppLog) AppLog.error('pwa', 'Service worker registration failed', err.message);
@@ -233,6 +266,20 @@
   }
 
   window.refreshPwaStatus = refreshStatus;
+  window.getBreathworkOfflineStatus = function () {
+    return {
+      shellReady: offlineReady,
+      ambientReady: ambientOfflineReady
+    };
+  };
+  window.refreshBreathworkOfflineReadiness = async function () {
+    var readiness = await Promise.all([verifyOfflineReady(), verifyAmbientOfflineReady()]);
+    markOfflineReady(readiness[0], readiness[1]);
+    return {
+      shellReady: offlineReady,
+      ambientReady: ambientOfflineReady
+    };
+  };
 
   if (window.I18n) {
     window.I18n.onChange(function () {
@@ -247,6 +294,13 @@
   window.addEventListener('orientationchange', function () {
     window.requestAnimationFrame(syncUpdateBannerLayout);
   });
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', function (event) {
+      if (event.data && event.data.type === 'OPTIONAL_MEDIA_CACHE_UPDATED') {
+        evaluateOfflineReady();
+      }
+    });
+  }
 
   registerUpdateButton();
   registerInstallHint();

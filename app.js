@@ -23,22 +23,37 @@
   let pauseToggleLock = false;
   let abandonConfirmHandler = null;
   let lastAnnouncedPhase = '';
+  let currentCompletionType = 'technique';
 
   var audioCues = AudioCues.createAudioCuePlayer({
     enabled: false,
     AudioContext: window.AudioContext || window.webkitAudioContext,
     vibrate: navigator.vibrate ? navigator.vibrate.bind(navigator) : null
   });
+  var unwindSession = GuidedSessions.getById('unwind-with-sound');
+  var sessionMedia = SessionMedia.createSessionMediaPlayer({
+    enabled: true,
+    volume: 0.45,
+    source: unwindSession ? unwindSession.ambientAssetPath : '',
+    AudioContext: window.AudioContext || window.webkitAudioContext,
+    onStatusChange: handleSessionMediaStatus
+  });
 
   let pendingHistoryEntry = null;
+  let pendingGuidedReflectionId = null;
 
   let state = {
     currentTechnique: null,
+    currentGuidedSession: null,
+    currentSessionType: 'technique',
     durationMinutes: null,
     durationRounds: null,
     soundEnabled: false,
     hapticsEnabled: false,
     volume: 0.7,
+    ambientEnabled: true,
+    ambientVolume: 0.45,
+    guidedDimView: false,
     showCountdown: true,
     useCustomDuration: false,
     theme: 'system',
@@ -48,6 +63,7 @@
 
   const screens = {
     list: document.getElementById('screen-list'),
+    guided: document.getElementById('screen-guided'),
     detail: document.getElementById('screen-detail'),
     duration: document.getElementById('screen-duration'),
     exercise: document.getElementById('screen-exercise'),
@@ -64,6 +80,22 @@
     intensityFilters: document.getElementById('intensity-filters'),
     listHistoryBtn: document.getElementById('list-history-btn'),
     listSettingsBtn: document.getElementById('list-settings-btn'),
+    guidedSessionList: document.getElementById('guided-session-list'),
+    guidedBack: document.getElementById('guided-back'),
+    guidedTitle: document.getElementById('guided-title'),
+    guidedDescription: document.getElementById('guided-description'),
+    guidedMeta: document.getElementById('guided-meta'),
+    guidedStageList: document.getElementById('guided-stage-list'),
+    guidedStart: document.getElementById('guided-start'),
+    guidedAmbientEnabled: document.getElementById('guided-ambient-enabled'),
+    guidedAmbientVolume: document.getElementById('guided-ambient-volume'),
+    guidedAudioStatus: document.getElementById('guided-audio-status'),
+    guidedOptions: document.getElementById('guided-options'),
+    guidedPaceDescription: document.getElementById('guided-pace-description'),
+    guidedDimView: document.getElementById('guided-dim-view'),
+    guidedSoundCues: document.getElementById('guided-sound-cues'),
+    guidedHaptics: document.getElementById('guided-haptics'),
+    guidedCueVolume: document.getElementById('guided-cue-volume'),
     techniqueList: document.getElementById('technique-list'),
     detailBack: document.getElementById('detail-back'),
     detailTitle: document.getElementById('detail-title'),
@@ -91,6 +123,7 @@
     durationVolume: document.getElementById('duration-volume'),
     audioStatus: document.getElementById('audio-status'),
     exerciseStop: document.getElementById('exercise-stop'),
+    exerciseMain: document.querySelector('.exercise-main'),
     exerciseGetReady: document.getElementById('exercise-get-ready'),
     exerciseGetReadyCountdown: document.getElementById('exercise-get-ready-countdown'),
     exerciseGetReadyHint: document.getElementById('exercise-get-ready-hint'),
@@ -108,8 +141,18 @@
     exercisePausedMessage: document.getElementById('exercise-paused-message'),
     exerciseResume: document.getElementById('exercise-resume'),
     exerciseEndSession: document.getElementById('exercise-end-session'),
+    guidedStageContent: document.getElementById('guided-stage-content'),
+    guidedStagePosition: document.getElementById('guided-stage-position'),
+    guidedStageTitle: document.getElementById('guided-stage-title'),
+    guidedStagePrompt: document.getElementById('guided-stage-prompt'),
+    guidedMediaStatus: document.getElementById('guided-media-status'),
+    guidedControlBar: document.getElementById('guided-control-bar'),
+    guidedStop: document.getElementById('guided-stop'),
+    guidedPause: document.getElementById('guided-pause'),
+    guidedRestNow: document.getElementById('guided-rest-now'),
     completionMessage: document.getElementById('completion-message'),
     completionStats: document.getElementById('completion-stats'),
+    completionNoteLabel: document.querySelector('.completion-note-label'),
     completionNote: document.getElementById('completion-note'),
     completionSave: document.getElementById('completion-save'),
     completionAgain: document.getElementById('completion-again'),
@@ -185,9 +228,13 @@
 
   function refreshLocalizedUi() {
     applyDocumentI18n();
+    renderGuidedSessionList();
     renderFilterChips();
     renderTechniqueList();
     updateContinueShortcut();
+    if (state.currentGuidedSession && screens.guided.classList.contains('screen-active')) {
+      renderGuidedOverview(state.currentGuidedSession);
+    }
     if (state.currentTechnique && screens.detail.classList.contains('screen-active')) {
       renderDetailScreen(resolveCurrentTechnique());
     }
@@ -225,8 +272,15 @@
     state.soundEnabled = prefs.sound;
     state.hapticsEnabled = prefs.haptics;
     state.volume = prefs.volume / 100;
+    state.ambientEnabled = prefs.ambientEnabled;
+    state.ambientVolume = prefs.ambientVolume / 100;
+    state.guidedDimView = prefs.guidedDimView;
     state.showCountdown = prefs.showCountdown;
     state.theme = prefs.theme;
+    state.currentSessionType = prefs.lastSessionType || 'technique';
+    if (prefs.lastGuidedSessionId) {
+      state.currentGuidedSession = GuidedSessions.getById(prefs.lastGuidedSessionId);
+    }
     if (prefs.lastTechId) {
       const tech = TECHNIQUES.find(function (t) {
         return t.id === prefs.lastTechId;
@@ -247,6 +301,10 @@
 
   function saveState() {
     const prefs = AppStorage.getPrefs();
+    prefs.lastSessionType = state.currentSessionType;
+    if (state.currentGuidedSession) {
+      prefs.lastGuidedSessionId = state.currentGuidedSession.id;
+    }
     if (state.currentTechnique) {
       prefs.lastTechId = state.currentTechnique.id;
       if (state.currentTechnique.durationMode === 'time') {
@@ -260,6 +318,9 @@
     prefs.sound = state.soundEnabled;
     prefs.haptics = state.hapticsEnabled;
     prefs.volume = Math.round(state.volume * 100);
+    prefs.ambientEnabled = state.ambientEnabled;
+    prefs.ambientVolume = Math.round(state.ambientVolume * 100);
+    prefs.guidedDimView = state.guidedDimView;
     prefs.showCountdown = state.showCountdown;
     prefs.theme = state.theme;
     prefs.locale = state.locale;
@@ -325,6 +386,15 @@
   function updateContinueShortcut() {
     if (!elements.continueLastBtn || !elements.continueLastDetail) return;
     const prefs = AppStorage.getPrefs();
+    if (prefs.lastSessionType === 'guided' && prefs.lastGuidedSessionId) {
+      const guidedSession = GuidedSessions.getById(prefs.lastGuidedSessionId);
+      if (guidedSession) {
+        elements.continueLastDetail.textContent =
+          I18n.t(guidedSession.titleKey) + ' · ' + I18n.t(guidedSession.durationLabelKey);
+        elements.continueLastBtn.classList.remove('hidden');
+        return;
+      }
+    }
     if (!prefs.lastTechId) {
       elements.continueLastBtn.classList.add('hidden');
       return;
@@ -350,10 +420,19 @@
 
   function continueWithLastSettings() {
     const prefs = AppStorage.getPrefs();
+    if (prefs.lastSessionType === 'guided' && prefs.lastGuidedSessionId) {
+      const guidedSession = GuidedSessions.getById(prefs.lastGuidedSessionId);
+      if (!guidedSession) return;
+      state.currentGuidedSession = guidedSession;
+      state.currentSessionType = 'guided';
+      startGuidedSession();
+      return;
+    }
     const tech = TECHNIQUES.find(function (t) {
       return t.id === prefs.lastTechId;
     });
     if (!tech) return;
+    state.currentSessionType = 'technique';
     state.currentTechnique = tech;
     if (tech.durationMode === 'time') {
       state.durationMinutes = prefs.lastMins;
@@ -405,16 +484,20 @@
       if (entry.durationMinutes) meta += ' · ' + entry.durationMinutes + ' ' + I18n.t('duration.min');
       if (entry.durationRounds) meta += ' · ' + entry.durationRounds + ' ' + I18n.t('duration.rounds');
       if (entry.elapsedMs) meta += ' · ' + formatMinutesSeconds(entry.elapsedMs);
+      const entryTitle = entry.titleKey
+        ? I18n.t(entry.titleKey)
+        : entry.techniqueName || I18n.t('history.sessionFallback');
       li.innerHTML =
         '<p class="history-item-title">' +
-        escapeHtml(entry.techniqueName || I18n.t('history.sessionFallback')) +
+        escapeHtml(entryTitle) +
         '</p><p class="history-item-meta">' +
         escapeHtml(meta) +
         '</p>';
-      if (entry.note) {
+      const savedText = entry.reflection || entry.note;
+      if (savedText) {
         const note = document.createElement('p');
         note.className = 'history-item-note';
-        note.textContent = entry.note;
+        note.textContent = savedText;
         li.appendChild(note);
       }
       elements.historyList.appendChild(li);
@@ -441,6 +524,10 @@
         'wakeLock' in navigator ? I18n.t('diagnostics.supported') : I18n.t('diagnostics.unavailable')
       ],
       [I18n.t('diagnostics.audio'), audioCues.getLastError() ? I18n.t('diagnostics.error') : I18n.t('diagnostics.ready')],
+      [
+        I18n.t('diagnostics.ambientAudio'),
+        sessionMedia.getLastError() ? I18n.t('diagnostics.error') : I18n.t('diagnostics.ready')
+      ],
       [
         I18n.t('diagnostics.lastError'),
         AppLog.getLastError() ? AppLog.getLastError().message : I18n.t('diagnostics.none')
@@ -583,11 +670,17 @@
   }
 
   function saveCompletedSession(note) {
-    if (!pendingHistoryEntry) return;
-    const entry = Object.assign({}, pendingHistoryEntry);
-    if (note) entry.note = note.trim().slice(0, 200);
-    AppStorage.addHistoryEntry(entry);
-    pendingHistoryEntry = null;
+    if (pendingHistoryEntry) {
+      const entry = Object.assign({}, pendingHistoryEntry);
+      if (note) entry.note = note.trim().slice(0, 200);
+      AppStorage.addHistoryEntry(entry);
+      pendingHistoryEntry = null;
+    } else if (pendingGuidedReflectionId) {
+      AppStorage.saveGuidedReflection(pendingGuidedReflectionId, note || '');
+      pendingGuidedReflectionId = null;
+    } else {
+      return;
+    }
     updateContinueShortcut();
   }
 
@@ -659,9 +752,11 @@
   function getFocusTarget(screenId) {
     const map = {
       list: document.getElementById('list-heading'),
+      guided: elements.guidedStart,
       detail: elements.detailContinue,
       duration: elements.durationStart,
-      exercise: elements.exercisePause,
+      exercise:
+        state.currentSessionType === 'guided' ? elements.guidedPause : elements.exercisePause,
       completion: elements.completionSave,
       history: elements.historyBack,
       settings: elements.settingsBack
@@ -687,6 +782,8 @@
     options = options || {};
     const key = screenId.replace('screen-', '');
     if (!screens[key]) return;
+    document.body.classList.toggle('session-screen-active', key === 'exercise');
+    document.body.classList.toggle('non-list-screen-active', key !== 'list');
     setScreenAccessibility(key);
     if (key === 'list') updateContinueShortcut();
     if (!options.skipFocus) {
@@ -749,6 +846,166 @@
       span.textContent = chip.label;
       container.appendChild(span);
     });
+  }
+
+  function renderGuidedMetaChips(container, guidedSession) {
+    if (!container || !guidedSession) return;
+    container.innerHTML = '';
+    [
+      I18n.t(guidedSession.durationLabelKey),
+      I18n.t('intensity.' + guidedSession.intensity),
+      I18n.t('guided.noHolds'),
+      I18n.t('guided.unpacedRest'),
+      I18n.t('guided.cueAvailability')
+    ].forEach(function (label) {
+      const chip = document.createElement('span');
+      chip.className = 'meta-chip';
+      chip.textContent = label;
+      container.appendChild(chip);
+    });
+  }
+
+  function renderGuidedSessionList() {
+    if (!elements.guidedSessionList) return;
+    elements.guidedSessionList.innerHTML = '';
+    GuidedSessions.GUIDED_SESSIONS.forEach(function (guidedSession) {
+      const li = document.createElement('li');
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'technique-card guided-session-card';
+      card.setAttribute('data-id', guidedSession.id);
+      card.innerHTML =
+        '<p class="technique-name">' +
+        escapeHtml(I18n.t(guidedSession.titleKey)) +
+        '</p><p class="technique-desc">' +
+        escapeHtml(I18n.t(guidedSession.descriptionKey)) +
+        '</p><div class="meta-chips"><span class="meta-chip meta-chip--gentle">' +
+        escapeHtml(I18n.t(guidedSession.durationLabelKey)) +
+        '</span><span class="meta-chip">' +
+        escapeHtml(I18n.t('guided.cueAvailability')) +
+        '</span></div>';
+      card.addEventListener('click', function () {
+        openGuidedOverview(guidedSession);
+      });
+      li.appendChild(card);
+      elements.guidedSessionList.appendChild(li);
+    });
+  }
+
+  function renderGuidedOverview(guidedSession) {
+    if (!guidedSession) return;
+    elements.guidedTitle.textContent = I18n.t(guidedSession.titleKey);
+    elements.guidedDescription.textContent = I18n.t(guidedSession.descriptionKey);
+    renderGuidedMetaChips(elements.guidedMeta, guidedSession);
+    elements.guidedStageList.innerHTML = '';
+    guidedSession.stages.forEach(function (stage) {
+      const li = document.createElement('li');
+      const name = document.createElement('span');
+      name.className = 'guided-stage-name';
+      name.textContent = I18n.t(stage.titleKey);
+      const detail = document.createElement('span');
+      detail.className = 'guided-stage-detail';
+      detail.textContent =
+        I18n.t('guided.stages.' + stage.id + '.duration') +
+        ' · ' +
+        I18n.t(stage.promptKey);
+      li.appendChild(name);
+      li.appendChild(detail);
+      elements.guidedStageList.appendChild(li);
+    });
+    if (elements.guidedAmbientEnabled) {
+      elements.guidedAmbientEnabled.checked = state.ambientEnabled;
+      elements.guidedAmbientEnabled.setAttribute(
+        'aria-checked',
+        state.ambientEnabled ? 'true' : 'false'
+      );
+    }
+    if (elements.guidedAmbientVolume) {
+      elements.guidedAmbientVolume.value = String(Math.round(state.ambientVolume * 100));
+      elements.guidedAmbientVolume.setAttribute(
+        'aria-valuenow',
+        elements.guidedAmbientVolume.value
+      );
+      elements.guidedAmbientVolume.disabled = !state.ambientEnabled;
+    }
+    const selectedPace = (guidedSession.paceOptions || []).find(function (pace) {
+      return pace.id === guidedSession.defaultPaceId;
+    });
+    if (elements.guidedPaceDescription && selectedPace) {
+      elements.guidedPaceDescription.textContent = I18n.t('guided.paceDescription', {
+        pace: I18n.t(selectedPace.labelKey),
+        inhale: selectedPace.inhaleSeconds,
+        exhale: selectedPace.exhaleSeconds
+      });
+    }
+    if (elements.guidedDimView) {
+      elements.guidedDimView.checked = state.guidedDimView;
+      elements.guidedDimView.setAttribute('aria-checked', state.guidedDimView ? 'true' : 'false');
+    }
+    if (elements.guidedSoundCues) {
+      elements.guidedSoundCues.checked = state.soundEnabled;
+      elements.guidedSoundCues.setAttribute(
+        'aria-checked',
+        state.soundEnabled ? 'true' : 'false'
+      );
+    }
+    if (elements.guidedHaptics) {
+      elements.guidedHaptics.checked = state.hapticsEnabled;
+      elements.guidedHaptics.setAttribute(
+        'aria-checked',
+        state.hapticsEnabled ? 'true' : 'false'
+      );
+    }
+    if (elements.guidedCueVolume) {
+      elements.guidedCueVolume.value = String(Math.round(state.volume * 100));
+      elements.guidedCueVolume.setAttribute('aria-valuenow', elements.guidedCueVolume.value);
+      elements.guidedCueVolume.disabled = !state.soundEnabled;
+    }
+    renderGuidedAudioStatus();
+  }
+
+  function getOfflineReadiness() {
+    if (!window.getBreathworkOfflineStatus) {
+      return { shellReady: false, ambientReady: false };
+    }
+    return window.getBreathworkOfflineStatus();
+  }
+
+  function renderGuidedAudioStatus() {
+    if (!elements.guidedAudioStatus) return;
+    const readiness = getOfflineReadiness();
+    if (!state.ambientEnabled) {
+      elements.guidedAudioStatus.textContent = I18n.t('guided.ambientOff');
+    } else if (readiness.ambientReady) {
+      elements.guidedAudioStatus.textContent = I18n.t('guided.ambientReadyOffline');
+    } else if (navigator.onLine) {
+      elements.guidedAudioStatus.textContent = I18n.t('guided.ambientPreparingOffline');
+    } else {
+      elements.guidedAudioStatus.textContent = I18n.t('guided.ambientUnavailableOffline');
+    }
+  }
+
+  function handleSessionMediaStatus(mediaStatus) {
+    renderGuidedAudioStatus();
+    if (!elements.guidedMediaStatus) return;
+    if (mediaStatus && mediaStatus.state === 'unavailable') {
+      elements.guidedMediaStatus.textContent = I18n.t('guided.ambientPlaybackFailed');
+      elements.guidedMediaStatus.classList.remove('hidden');
+      if (screens.exercise && screens.exercise.classList.contains('screen-active')) {
+        announceToScreenReader(I18n.t('guided.ambientPlaybackFailed'));
+      }
+      return;
+    }
+    elements.guidedMediaStatus.textContent = '';
+    elements.guidedMediaStatus.classList.add('hidden');
+  }
+
+  function openGuidedOverview(guidedSession) {
+    state.currentGuidedSession = guidedSession;
+    state.currentSessionType = 'guided';
+    renderGuidedOverview(guidedSession);
+    saveState();
+    navigateTo('screen-guided');
   }
 
   function renderSafetyWarningBlock(el, tech) {
@@ -958,6 +1215,7 @@
 
   function openDetail(tech) {
     state.currentTechnique = tech;
+    state.currentSessionType = 'technique';
     const limits = getDurationLimits(tech);
     const presets = limits.presets || [];
     if (tech.durationMode === 'time') {
@@ -1151,6 +1409,21 @@
     lastAnnouncedPhase = '';
   }
 
+  function resetGuidedExerciseUi() {
+    if (screens.exercise) screens.exercise.classList.remove('guided-session-active');
+    if (elements.guidedControlBar) {
+      elements.guidedControlBar.classList.add('hidden');
+      elements.guidedControlBar.removeAttribute('inert');
+      elements.guidedControlBar.removeAttribute('aria-hidden');
+    }
+    if (elements.exerciseMain) elements.exerciseMain.classList.remove('guided-mode', 'dim-view');
+    if (elements.guidedStageContent) elements.guidedStageContent.classList.add('hidden');
+    if (elements.guidedRestNow) elements.guidedRestNow.classList.add('hidden');
+    if (elements.exerciseSessionLeft) elements.exerciseSessionLeft.removeAttribute('aria-hidden');
+    if (elements.exerciseCountdown) elements.exerciseCountdown.removeAttribute('aria-hidden');
+    if (elements.exerciseNextPhase) elements.exerciseNextPhase.removeAttribute('aria-hidden');
+  }
+
   function exitExerciseScreen(immediate) {
     const doExit = function () {
       cleanupExercise();
@@ -1271,7 +1544,10 @@
     elements.completionStats.innerHTML = '';
     const rows = [
       [I18n.t('completion.elapsed'), formatMinutesSeconds(stats.elapsedMs)],
-      [I18n.t('completion.technique'), stats.techniqueName]
+      [
+        stats.sessionLabel ? I18n.t('completion.session') : I18n.t('completion.technique'),
+        stats.sessionLabel || stats.techniqueName
+      ]
     ];
     if (stats.roundsCompleted != null) rows.push([I18n.t('completion.rounds'), String(stats.roundsCompleted)]);
     if (stats.cyclesCompleted != null) rows.push([I18n.t('completion.cycles'), String(stats.cyclesCompleted)]);
@@ -1352,9 +1628,19 @@
           elapsedMs: elapsedMs,
           completed: true
         };
+        pendingGuidedReflectionId = null;
         elements.completionMessage.textContent = I18n.t('completion.sessionComplete');
         renderCompletionStats(sessionStats);
-        if (elements.completionNote) elements.completionNote.value = '';
+        if (elements.completionNoteLabel) {
+          elements.completionNoteLabel.textContent = I18n.t('completion.optionalNote');
+        }
+        if (elements.completionNote) {
+          elements.completionNote.value = '';
+          elements.completionNote.placeholder = I18n.t('completion.notePlaceholder');
+        }
+        if (elements.completionSave) {
+          elements.completionSave.textContent = I18n.t('completion.saveFinish');
+        }
         announceToScreenReader(I18n.t('completion.sessionComplete'));
         navigateTo('screen-completion');
       } else {
@@ -1421,6 +1707,9 @@
     }
 
     function start() {
+      sessionMedia.stop(true);
+      resetGuidedExerciseUi();
+      if (elements.circleWrap) elements.circleWrap.classList.remove('hidden');
       elements.exerciseTapHold.classList.add('hidden');
       elements.exercisePaused.classList.add('hidden');
       applyAudioSettings();
@@ -1484,6 +1773,288 @@
     };
   }
 
+  function createGuidedExerciseSession(guidedSession, completionId) {
+    const engine = GuidedSessionEngine.createGuidedSessionEngine({
+      sessionDefinition: guidedSession,
+      techniques: TECHNIQUES,
+      sessionEngine: SessionEngine
+    });
+    const coherentTechnique = localizeTechnique(
+      TECHNIQUES.find(function (technique) {
+        return technique.id === 'coherent';
+      })
+    );
+    let tickIntervalId = null;
+    let wakeLockSentinel = null;
+    let ending = false;
+    let currentStageId = null;
+
+    function acquireWakeLock() {
+      if (!('wakeLock' in navigator) || wakeLockSentinel) return;
+      navigator.wakeLock
+        .request('screen')
+        .then(function (sentinel) {
+          wakeLockSentinel = sentinel;
+          sentinel.addEventListener('release', function () {
+            wakeLockSentinel = null;
+          });
+        })
+        .catch(function () {});
+    }
+
+    function releaseWakeLock() {
+      if (!wakeLockSentinel) return;
+      wakeLockSentinel.release().catch(function () {});
+      wakeLockSentinel = null;
+    }
+
+    function clearTickInterval() {
+      if (tickIntervalId == null) return;
+      clearInterval(tickIntervalId);
+      tickIntervalId = null;
+    }
+
+    function setGuidedCompletionUi() {
+      currentCompletionType = 'guided';
+      if (elements.completionNoteLabel) {
+        elements.completionNoteLabel.classList.remove('hidden');
+        elements.completionNoteLabel.textContent = I18n.t('guided.reflectionLabel');
+      }
+      if (elements.completionNote) {
+        elements.completionNote.classList.remove('hidden');
+        elements.completionNote.value = '';
+        elements.completionNote.placeholder = I18n.t('guided.reflectionPlaceholder');
+      }
+      if (elements.completionSave) {
+        elements.completionSave.classList.remove('hidden');
+        elements.completionSave.textContent = I18n.t('guided.saveReflection');
+      }
+    }
+
+    function endGuidedSession(snapshot) {
+      if (ending) return;
+      ending = true;
+      clearTickInterval();
+      releaseWakeLock();
+      activeExerciseSession = null;
+      startInProgress = false;
+      const elapsedMs = snapshot.sessionElapsedMs;
+      engine.cleanup();
+      sessionMedia.stop(true);
+      audioCues.suspend();
+      resetGuidedExerciseUi();
+      playCompletionCue();
+      AppStorage.addHistoryEntry({
+        sessionType: 'guided',
+        guidedSessionId: guidedSession.id,
+        titleKey: guidedSession.titleKey,
+        completionId: completionId,
+        elapsedMs: elapsedMs,
+        stagesCompleted: snapshot.completedStageIds || [],
+        stagesSkipped: snapshot.skippedStageIds || [],
+        restEntryReason: snapshot.restEntryReason || 'scheduled',
+        completed: true
+      });
+      pendingHistoryEntry = null;
+      pendingGuidedReflectionId = completionId;
+      sessionStats = {
+        elapsedMs: elapsedMs,
+        sessionLabel: I18n.t(guidedSession.titleKey)
+      };
+      elements.completionMessage.textContent = I18n.t('guided.savedAutomatically');
+      renderCompletionStats(sessionStats);
+      setGuidedCompletionUi();
+      announceToScreenReader(I18n.t('guided.savedAutomatically'));
+      navigateTo('screen-completion');
+    }
+
+    function applyGuidedDimView() {
+      if (elements.exerciseMain) {
+        elements.exerciseMain.classList.toggle('dim-view', state.guidedDimView);
+      }
+      if (elements.exerciseSessionLeft) {
+        elements.exerciseSessionLeft.setAttribute(
+          'aria-hidden',
+          state.guidedDimView ? 'true' : 'false'
+        );
+      }
+      if (elements.exerciseCountdown) {
+        elements.exerciseCountdown.setAttribute(
+          'aria-hidden',
+          state.guidedDimView || !state.showCountdown ? 'true' : 'false'
+        );
+      }
+      if (elements.exerciseNextPhase && state.guidedDimView) {
+        elements.exerciseNextPhase.setAttribute('aria-hidden', 'true');
+      }
+    }
+
+    function applyGuidedSnapshot(snapshot) {
+      if (!snapshot || !snapshot.stage) return;
+      const stage = snapshot.stage;
+      if (elements.exerciseMain) elements.exerciseMain.classList.add('guided-mode');
+      elements.guidedStageContent.classList.remove('hidden');
+      elements.guidedStagePosition.textContent = I18n.t('guided.stageOf', {
+        current: snapshot.stageIndex + 1,
+        total: guidedSession.stages.length
+      });
+      elements.guidedStageTitle.textContent = I18n.t(stage.titleKey);
+      elements.guidedStagePrompt.textContent = I18n.t(stage.promptKey);
+      elements.exerciseSessionLeft.textContent = I18n.t('exercise.left', {
+        time: formatMinutesSeconds(snapshot.stageRemainingMs)
+      });
+
+      const showRestNow = stage.id === 'arrive' || stage.id === 'breathe';
+      elements.guidedRestNow.classList.toggle('hidden', !showRestNow);
+      if (snapshot.stageChanged) {
+        if (stage.id === 'rest') {
+          sessionMedia.enterAmbient();
+        } else if (currentStageId === 'rest') {
+          sessionMedia.leaveAmbient();
+        }
+        currentStageId = stage.id;
+      }
+      if (stage.type === 'technique' && snapshot.techniqueSnapshot) {
+        elements.circleWrap.classList.remove('hidden');
+        const techniqueSnapshot = Object.assign({}, snapshot.techniqueSnapshot);
+        if (coherentTechnique && coherentTechnique.phases[techniqueSnapshot.phaseIndex]) {
+          techniqueSnapshot.phase = Object.assign(
+            {},
+            techniqueSnapshot.phase,
+            { label: coherentTechnique.phases[techniqueSnapshot.phaseIndex].label }
+          );
+        }
+        if (snapshot.stageChanged && !techniqueSnapshot.phaseChanged) {
+          techniqueSnapshot.phaseChanged = true;
+          techniqueSnapshot.phaseSignature =
+            snapshot.stageSignature + '-' + techniqueSnapshot.phaseIndex;
+        }
+        applyExerciseSnapshot(techniqueSnapshot, coherentTechnique);
+        elements.exerciseSessionLeft.textContent = I18n.t('exercise.left', {
+          time: formatMinutesSeconds(snapshot.stageRemainingMs)
+        });
+        playSessionCue(techniqueSnapshot);
+      } else {
+        elements.circleWrap.classList.add('hidden');
+        elements.exerciseTapHold.classList.add('hidden');
+        elements.exerciseNextPhase.textContent = '';
+        elements.exerciseNextPhase.setAttribute('aria-hidden', 'true');
+      }
+
+      if (snapshot.stageChanged) {
+        announceToScreenReader(
+          I18n.t('guided.stageStarted', {
+            stage: I18n.t(stage.titleKey),
+            prompt: I18n.t(stage.promptKey)
+          })
+        );
+      }
+      applyGuidedDimView();
+    }
+
+    function tickGuidedSession() {
+      const snapshot = engine.tick(Date.now());
+      if (snapshot.stopped) return;
+      if (snapshot.completed) {
+        endGuidedSession(snapshot);
+        return;
+      }
+      if (!snapshot.paused) applyGuidedSnapshot(snapshot);
+    }
+
+    function pauseSession(autoPause) {
+      if (!engine.pause(Date.now())) return;
+      elements.exercisePausedMessage.textContent = autoPause
+        ? I18n.t('exercise.pausedBackground')
+        : I18n.t('exercise.paused');
+      elements.exercisePaused.classList.remove('hidden');
+      elements.exercisePaused.setAttribute('aria-hidden', 'false');
+      elements.guidedControlBar.setAttribute('inert', '');
+      elements.guidedControlBar.setAttribute('aria-hidden', 'true');
+      sessionMedia.pause(autoPause);
+      releaseWakeLock();
+      announceToScreenReader(
+        autoPause ? I18n.t('exercise.pausedBackgroundSr') : I18n.t('exercise.pausedSr')
+      );
+      elements.exerciseResume.focus();
+    }
+
+    function resumeSession() {
+      if (!engine.resume(Date.now())) return;
+      elements.exercisePaused.classList.add('hidden');
+      elements.exercisePaused.setAttribute('aria-hidden', 'true');
+      elements.guidedControlBar.removeAttribute('inert');
+      elements.guidedControlBar.removeAttribute('aria-hidden');
+      unlockAudioFromUserGesture();
+      if (currentStageId === 'rest') sessionMedia.resumeAmbient();
+      else if (sessionMedia.isEnabled()) sessionMedia.prepareFromGesture();
+      acquireWakeLock();
+      announceToScreenReader(I18n.t('exercise.resumedSr'));
+      elements.guidedPause.focus();
+      applyGuidedSnapshot(engine.tick(Date.now()));
+    }
+
+    function start() {
+      elements.exerciseGetReady.classList.add('hidden');
+      elements.exerciseGetReady.setAttribute('aria-hidden', 'true');
+      elements.exercisePaused.classList.add('hidden');
+      elements.exerciseTapHold.classList.add('hidden');
+      if (screens.exercise) screens.exercise.classList.add('guided-session-active');
+      if (elements.guidedControlBar) {
+        elements.guidedControlBar.classList.remove('hidden');
+        elements.guidedControlBar.removeAttribute('inert');
+        elements.guidedControlBar.removeAttribute('aria-hidden');
+      }
+      applyAudioSettings();
+      const togglePause = function () {
+        if (engine.getStatus() === GuidedSessionEngine.STATUS.PAUSED) resumeSession();
+        else pauseSession(false);
+      };
+      elements.exercisePause.onclick = togglePause;
+      elements.guidedPause.onclick = togglePause;
+      elements.guidedStop.onclick = function () {
+        engine.stop();
+        exitExerciseScreen(true);
+      };
+      elements.exerciseResume.onclick = resumeSession;
+      elements.exerciseEndSession.onclick = function () {
+        engine.stop();
+        exitExerciseScreen(true);
+      };
+      elements.guidedRestNow.onclick = function () {
+        const snapshot = engine.skipToRest(Date.now());
+        if (snapshot && !snapshot.paused) applyGuidedSnapshot(snapshot);
+      };
+      const snapshot = engine.start(Date.now());
+      currentStageId = null;
+      applyGuidedSnapshot(snapshot);
+      tickIntervalId = setInterval(tickGuidedSession, CUE_TICK_MS);
+      acquireWakeLock();
+      elements.guidedPause.focus();
+    }
+
+    return {
+      start: start,
+      pauseIfRunning: function () {
+        pauseSession(true);
+      },
+      cleanup: function () {
+        clearTickInterval();
+        releaseWakeLock();
+        elements.exercisePause.onclick = null;
+        elements.guidedPause.onclick = null;
+        elements.guidedStop.onclick = null;
+        elements.exerciseResume.onclick = null;
+        elements.exerciseEndSession.onclick = null;
+        elements.guidedRestNow.onclick = null;
+        engine.cleanup();
+        sessionMedia.stop(true);
+        audioCues.suspend();
+        resetGuidedExerciseUi();
+      }
+    };
+  }
+
   function startSession() {
     if (startInProgress) return;
     const tech = state.currentTechnique;
@@ -1498,9 +2069,41 @@
     beginSession();
   }
 
+  function startGuidedSession() {
+    if (startInProgress || !state.currentGuidedSession) return;
+    unlockAudioFromUserGesture();
+    startInProgress = true;
+    pendingGuidedReflectionId = null;
+    state.currentSessionType = 'guided';
+    const readiness = getOfflineReadiness();
+    const ambientCanLoad = navigator.onLine || readiness.ambientReady;
+    sessionMedia.setEnabled(state.ambientEnabled && ambientCanLoad);
+    sessionMedia.setVolume(state.ambientVolume);
+    if (state.ambientEnabled && ambientCanLoad) {
+      sessionMedia.prepareFromGesture();
+    } else if (state.ambientEnabled && elements.guidedMediaStatus) {
+      elements.guidedMediaStatus.textContent = I18n.t('guided.ambientUnavailableOffline');
+      elements.guidedMediaStatus.classList.remove('hidden');
+    }
+    saveState();
+    sessionStartMs = Date.now();
+    lastAnnouncedPhase = '';
+    navigateTo('screen-exercise');
+    elements.exerciseTechniqueName.textContent = I18n.t(state.currentGuidedSession.titleKey);
+    elements.exerciseRoundInfo.textContent = '';
+    if (activeExerciseSession) activeExerciseSession.cleanup();
+    activeExerciseSession = createGuidedExerciseSession(
+      state.currentGuidedSession,
+      'guided_' + sessionStartMs
+    );
+    activeExerciseSession.start();
+    startInProgress = false;
+  }
+
   function beginSession() {
     if (startInProgress) return;
     startInProgress = true;
+    pendingGuidedReflectionId = null;
     const tech = localizeTechnique(state.currentTechnique);
     if (!tech) {
       startInProgress = false;
@@ -1512,7 +2115,12 @@
     }
     saveState();
     sessionStartMs = Date.now();
+    currentCompletionType = 'technique';
+    if (elements.completionNoteLabel) elements.completionNoteLabel.classList.remove('hidden');
+    if (elements.completionNote) elements.completionNote.classList.remove('hidden');
+    if (elements.completionSave) elements.completionSave.classList.remove('hidden');
     lastAnnouncedPhase = '';
+    resetGuidedExerciseUi();
     navigateTo('screen-exercise');
     if (elements.exerciseTechniqueName) elements.exerciseTechniqueName.textContent = tech.name;
     if (elements.exerciseSessionLeft) elements.exerciseSessionLeft.textContent = '';
@@ -1602,6 +2210,7 @@
     }
     if (fromScreen === 'duration') return true;
     if (fromScreen === 'detail') return true;
+    if (fromScreen === 'guided') return true;
     if (fromScreen === 'completion') return true;
     if (fromScreen === 'history') return true;
     if (fromScreen === 'settings') return true;
@@ -1629,6 +2238,80 @@
     AppNavigation.back();
   });
   elements.detailContinue.addEventListener('click', openDurationSetup);
+  if (elements.guidedBack) {
+    elements.guidedBack.addEventListener('click', function () {
+      AppNavigation.back();
+    });
+  }
+  if (elements.guidedStart) {
+    elements.guidedStart.addEventListener('click', startGuidedSession);
+  }
+  if (elements.guidedAmbientEnabled) {
+    elements.guidedAmbientEnabled.addEventListener('change', function () {
+      state.ambientEnabled = elements.guidedAmbientEnabled.checked;
+      elements.guidedAmbientEnabled.setAttribute(
+        'aria-checked',
+        state.ambientEnabled ? 'true' : 'false'
+      );
+      if (elements.guidedAmbientVolume) {
+        elements.guidedAmbientVolume.disabled = !state.ambientEnabled;
+      }
+      saveState();
+      renderGuidedAudioStatus();
+    });
+  }
+  if (elements.guidedAmbientVolume) {
+    elements.guidedAmbientVolume.addEventListener('input', function () {
+      state.ambientVolume = parseInt(elements.guidedAmbientVolume.value, 10) / 100;
+      elements.guidedAmbientVolume.setAttribute(
+        'aria-valuenow',
+        elements.guidedAmbientVolume.value
+      );
+      sessionMedia.setVolume(state.ambientVolume);
+      saveState();
+    });
+  }
+  if (elements.guidedDimView) {
+    elements.guidedDimView.addEventListener('change', function () {
+      state.guidedDimView = elements.guidedDimView.checked;
+      elements.guidedDimView.setAttribute(
+        'aria-checked',
+        state.guidedDimView ? 'true' : 'false'
+      );
+      saveState();
+    });
+  }
+  if (elements.guidedSoundCues) {
+    elements.guidedSoundCues.addEventListener('change', function () {
+      state.soundEnabled = elements.guidedSoundCues.checked;
+      elements.guidedSoundCues.setAttribute(
+        'aria-checked',
+        state.soundEnabled ? 'true' : 'false'
+      );
+      if (elements.guidedCueVolume) elements.guidedCueVolume.disabled = !state.soundEnabled;
+      applyAudioSettings();
+      saveState();
+    });
+  }
+  if (elements.guidedHaptics) {
+    elements.guidedHaptics.addEventListener('change', function () {
+      state.hapticsEnabled = elements.guidedHaptics.checked;
+      elements.guidedHaptics.setAttribute(
+        'aria-checked',
+        state.hapticsEnabled ? 'true' : 'false'
+      );
+      applyAudioSettings();
+      saveState();
+    });
+  }
+  if (elements.guidedCueVolume) {
+    elements.guidedCueVolume.addEventListener('input', function () {
+      state.volume = parseInt(elements.guidedCueVolume.value, 10) / 100;
+      elements.guidedCueVolume.setAttribute('aria-valuenow', elements.guidedCueVolume.value);
+      applyAudioSettings();
+      saveState();
+    });
+  }
   elements.durationBack.addEventListener('click', function () {
     AppNavigation.back();
   });
@@ -1642,7 +2325,11 @@
   }
   elements.completionAgain.addEventListener('click', function () {
     saveCompletedSession(elements.completionNote ? elements.completionNote.value : '');
-    navigateTo('screen-duration');
+    if (currentCompletionType === 'guided' && state.currentGuidedSession) {
+      openGuidedOverview(state.currentGuidedSession);
+    } else {
+      navigateTo('screen-duration');
+    }
   });
   elements.completionList.addEventListener('click', function () {
     saveCompletedSession(elements.completionNote ? elements.completionNote.value : '');
@@ -1771,7 +2458,9 @@
   applyDocumentI18n();
   applyAudioSettings();
   renderFilterChips();
+  renderGuidedSessionList();
   renderTechniqueList();
+  window.addEventListener('breathwork:offline-status', renderGuidedAudioStatus);
   showScreen('screen-list', { skipFocus: true });
   maybeShowOnboarding();
 

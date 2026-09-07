@@ -4,12 +4,12 @@ These budgets guide releases for the Breathwork PWA shell on the supported devic
 
 ## Asset budgets
 
-| Asset group | Budget (compressed) | Notes |
-|-------------|---------------------|-------|
-| App shell JS | ≤ 80 KB total | `app.js`, modules, engine, audio |
-| App shell CSS | ≤ 25 KB | `styles.css` |
-| Icons (PNG + SVG) | ≤ 15 KB | Generated via `scripts/generate-icons.py` |
-| Audio | 0 KB transfer | Synthesized at runtime — no audio files |
+| Asset group | Budget | Current measurement |
+|-------------|--------|---------------------|
+| App shell JS | ≤ 250 KB raw / ≤ 80 KB gzip | 225,821 bytes raw / 55,277 bytes gzip across 18 files |
+| App shell CSS | ≤ 32 KB raw / ≤ 8 KB gzip | 28,169 bytes raw / 5,391 bytes gzip |
+| Icons (PNG + SVG) | ≤ 15 KB raw | Generated via `scripts/generate-icons.py` |
+| Optional ambient audio | ≤ 4.5 MB | 4,124,424-byte, 7:30 AAC file cached separately from the required app shell |
 
 ## Startup
 
@@ -25,7 +25,7 @@ These budgets guide releases for the Breathwork PWA shell on the supported devic
 |--------|--------|
 | Cue scheduler interval | 100 ms (not per-frame) |
 | Breathing animation | CSS transform on one orb; disabled under `prefers-reduced-motion` |
-| Audio contexts | One shared context per session |
+| Audio contexts | At most one cue context and one ambient-media context per session |
 
 ## Verification
 

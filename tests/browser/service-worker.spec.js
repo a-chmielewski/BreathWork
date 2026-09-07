@@ -45,16 +45,31 @@ test.describe('service worker — root scope', function () {
       if (!('serviceWorker' in navigator)) return { supported: false };
       const registration = await navigator.serviceWorker.ready;
       const names = await caches.keys();
-      const cache = await caches.open(names[0] || '');
-      const keys = (await cache.keys()).map(function (req) {
+      const shellCacheName = names.find(function (name) {
+        return name === 'breathwork-' + APP_VERSION;
+      });
+      const mediaCacheName = names.find(function (name) {
+        return name === 'breathwork-media-' + APP_VERSION;
+      });
+      const shellCache = await caches.open(shellCacheName || '');
+      const mediaCache = await caches.open(mediaCacheName || '');
+      const keys = (await shellCache.keys()).map(function (req) {
         return new URL(req.url).pathname;
       });
+      const mediaKeys = (await mediaCache.keys()).map(function (req) {
+        return new URL(req.url).pathname;
+      });
+      const ambientResponse = await mediaCache.match(
+        new URL('./assets/audio/unwind-ambient.m4a', window.location.href).href
+      );
       return {
         supported: true,
         scope: registration.scope,
         controller: !!navigator.serviceWorker.controller,
         cacheNames: names,
-        cachedPaths: keys
+        cachedPaths: keys,
+        cachedMediaPaths: mediaKeys,
+        ambientContentType: ambientResponse ? ambientResponse.headers.get('content-type') : null
       };
     });
 
@@ -62,8 +77,18 @@ test.describe('service worker — root scope', function () {
     expect(swState.controller).toBe(true);
     expect(swState.cacheNames[0]).toContain('breathwork-');
     expect(swState.cachedPaths).toEqual(
-      expect.arrayContaining(['/index.html', '/session-engine.js', '/pwa.js'])
+      expect.arrayContaining([
+        '/index.html',
+        '/session-engine.js',
+        '/guided-sessions.js',
+        '/guided-session-engine.js',
+        '/session-media.js',
+        '/offline-assets.js',
+        '/pwa.js'
+      ])
     );
+    expect(swState.cachedMediaPaths).toContain('/assets/audio/unwind-ambient.m4a');
+    expect(swState.ambientContentType).toContain('audio/mp4');
   });
 
   test('shows offline-ready status after cache warms', async function ({ page }) {
@@ -72,6 +97,59 @@ test.describe('service worker — root scope', function () {
       return navigator.serviceWorker && navigator.serviceWorker.controller;
     });
     await expect(page.locator('#app-status-text')).toContainText('Ready offline', { timeout: 15000 });
+    await expect(page.locator('#app-status-text')).toContainText('Ambient ready offline', {
+      timeout: 15000
+    });
+  });
+
+  test('serves cached ambient media byte ranges for WebKit playback', async function ({ page }) {
+    await page.goto('/');
+    await page.waitForFunction(function () {
+      return navigator.serviceWorker && navigator.serviceWorker.controller;
+    });
+    const rangeResponse = await page.evaluate(async function () {
+      const response = await fetch('./assets/audio/unwind-ambient.m4a', {
+        headers: { Range: 'bytes=100-199' }
+      });
+      return {
+        status: response.status,
+        contentRange: response.headers.get('content-range'),
+        acceptRanges: response.headers.get('accept-ranges'),
+        length: (await response.arrayBuffer()).byteLength
+      };
+    });
+    expect(rangeResponse.status).toBe(206);
+    expect(rangeResponse.contentRange).toMatch(/^bytes 100-199\/\d+$/);
+    expect(rangeResponse.acceptRanges).toBe('bytes');
+    expect(rangeResponse.length).toBe(100);
+  });
+
+  test('keeps the shell usable and reports silence when the media cache is missing', async function ({
+    page,
+    context
+  }) {
+    await page.goto('/');
+    await page.waitForFunction(function () {
+      return (
+        window.getBreathworkOfflineStatus &&
+        window.getBreathworkOfflineStatus().ambientReady === true
+      );
+    });
+    await context.setOffline(true);
+    const readiness = await page.evaluate(async function () {
+      const cache = await caches.open('breathwork-media-' + APP_VERSION);
+      await cache.delete(new URL('./assets/audio/unwind-ambient.m4a', window.location.href).href);
+      return window.refreshBreathworkOfflineReadiness();
+    });
+    expect(readiness).toEqual({ shellReady: true, ambientReady: false });
+    if (await page.locator('#onboarding-modal').isVisible()) {
+      await page.locator('#onboarding-dismiss').click();
+    }
+    await page.getByRole('button', { name: /Unwind with sound/ }).click();
+    await expect(page.locator('#guided-audio-status')).toContainText(
+      'Ambient sound is not available offline'
+    );
+    await context.setOffline(false);
   });
 
   test('manifest uses scope-relative install paths', function () {
@@ -128,6 +206,20 @@ test.describe('service worker — subpath scope (BW-005)', function () {
     );
 
     await expect(page.locator('#app-status-text')).toContainText('Ready offline', { timeout: 15000 });
+
+    const rangeStatus = await page.evaluate(async function () {
+      const response = await fetch('./assets/audio/unwind-ambient.m4a', {
+        headers: { Range: 'bytes=0-31' }
+      });
+      return {
+        status: response.status,
+        contentRange: response.headers.get('content-range'),
+        length: (await response.arrayBuffer()).byteLength
+      };
+    });
+    expect(rangeStatus.status).toBe(206);
+    expect(rangeStatus.contentRange).toMatch(/^bytes 0-31\/\d+$/);
+    expect(rangeStatus.length).toBe(32);
 
     await context.setOffline(true);
     await page.evaluate(function () {

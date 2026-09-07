@@ -16,7 +16,8 @@ var I18N_PL = {
   },
   list: {
     intro:
-      'Wybierz technikę oddechową z przewodnikiem. Każda sesja zawiera sygnały czasowe, którym możesz podążać z zamkniętymi oczami.',
+      'Wybierz technikę oddechową. Każda sesja zawiera sygnały czasowe, którym możesz podążać z zamkniętymi oczami.',
+    techniquesHeading: 'Techniki',
     continueLast: 'Kontynuuj z ostatnimi ustawieniami',
     history: 'Historia',
     settings: 'Ustawienia',
@@ -26,6 +27,79 @@ var I18N_PL = {
     filterTechniques: 'Filtruj techniki',
     filterGoal: 'Filtruj według celu',
     filterIntensity: 'Filtruj według intensywności'
+  },
+  guided: {
+    listHeading: 'Sesje prowadzone',
+    listIntro: 'Usiądź wygodnie i przejdź przez pełną praktykę — od przybycia do odpoczynku.',
+    backAria: 'Wróć do sesji prowadzonych',
+    detailsAria: 'Szczegóły sesji prowadzonej',
+    stageOverview: 'Przebieg sesji',
+    posture:
+      'Usiądź lub połóż się wygodnie. Oddychaj swobodnie i wróć do naturalnego oddechu, kiedy tylko zechcesz.',
+    audioHeading: 'Dźwięk tła',
+    ambientEnabled: 'Odtwarzaj dźwięk tła podczas odpoczynku',
+    ambientVolume: 'Głośność dźwięku tła',
+    ambientOff: 'Dźwięk tła jest wyłączony. Pełna sesja pozostaje dostępna w ciszy.',
+    ambientReadyOffline: 'Dźwięk tła jest gotowy offline na tym urządzeniu.',
+    ambientPreparingOffline:
+      'Dźwięk tła jest dostępny online i przygotowywany do użycia offline.',
+    ambientUnavailableOffline:
+      'Dźwięk tła nie jest dostępny offline. Sesja będzie kontynuowana w ciszy.',
+    ambientPlaybackFailed:
+      'Nie udało się odtworzyć dźwięku tła. Sesja jest kontynuowana z tekstem i w ciszy.',
+    optionsHeading: 'Opcje sesji',
+    paceComfortable: 'Spokojne',
+    paceDescription: '{pace} tempo: wdech {inhale}s · wydech {exhale}s',
+    dimView: 'Przyciemniony widok — ukryj czas liczbowy',
+    soundCues: 'Sygnały dźwiękowe przy zmianie fazy',
+    haptics: 'Wibracje przy zmianie fazy',
+    cueVolume: 'Głośność sygnałów',
+    editorialNote:
+      'Ta sekwencja jest redakcyjną praktyką wellness, a nie leczeniem ani odtworzeniem zajęć.',
+    start: 'Rozpocznij sesję prowadzoną',
+    restNow: 'Odpocznij teraz',
+    pause: 'Pauza',
+    controlsAria: 'Sterowanie sesją prowadzoną',
+    stageOf: 'Etap {current} z {total}',
+    stageStarted: '{stage}. {prompt}',
+    savedAutomatically: 'Sesja prowadzona zakończona i zapisana.',
+    reflectionLabel: 'Opcjonalna refleksja — zapisywana tylko na tym urządzeniu',
+    reflectionPlaceholder: 'Co teraz zauważasz?',
+    saveReflection: 'Zapisz refleksję',
+    sessionType: 'Sesja prowadzona',
+    naturalBreathing: 'Naturalny oddech',
+    cueAvailability: 'Opcjonalny dźwięk tła i sygnały faz',
+    noHolds: 'Bez wstrzymywania',
+    unpacedRest: 'Odpoczynek z naturalnym oddechem',
+    unwind: {
+      title: 'Wyciszenie z dźwiękiem',
+      description:
+        'Łagodna praktyka z czasem na przybycie, równy oddech, odpoczynek z naturalnym oddechem i powrót.',
+      duration: 'Około 15 min'
+    },
+    stages: {
+      arrive: {
+        title: 'Przybycie',
+        duration: 'Około 2 min',
+        prompt:
+          'Znajdź wygodną pozycję. Rozluźnij ramiona i poczuj podparcie pod swoim ciałem.'
+      },
+      breathe: {
+        title: 'Oddech',
+        duration: 'Około 5 min',
+        prompt: 'Podążaj za spokojnym, równym rytmem. Komfort jest ważniejszy niż precyzja.'
+      },
+      rest: {
+        title: 'Słuchanie i odpoczynek',
+        duration: 'Około 7 min',
+        prompt: 'Puść liczenie. Oddychaj naturalnie z opcjonalnym dźwiękiem tła lub w ciszy.'
+      },
+      return: {
+        title: 'Powrót',
+        duration: 'Około 1 min',
+        prompt: 'Zauważ przestrzeń wokół siebie. Porusz się delikatnie i wróć we własnym tempie.'
+      }
+    }
   },
   goal: {
     all: 'Wszystkie',
@@ -129,6 +203,7 @@ var I18N_PL = {
     backToList: 'Wróć do listy',
     elapsed: 'Czas trwania',
     technique: 'Technika',
+    session: 'Sesja',
     rounds: 'Rundy',
     cycles: 'Cykle'
   },
@@ -172,6 +247,7 @@ var I18N_PL = {
     serviceWorker: 'Service worker',
     wakeLock: 'Blokada wygaszania',
     audio: 'Audio',
+    ambientAudio: 'Dźwięk tła',
     lastError: 'Ostatni błąd',
     yes: 'Tak',
     no: 'Nie',
@@ -185,6 +261,7 @@ var I18N_PL = {
     installed: 'Zainstalowana',
     offlineNow: 'Offline',
     readyOffline: 'Gotowa offline',
+    ambientReadyOffline: 'Dźwięk tła gotowy offline',
     preparingOffline: 'Przygotowywanie trybu offline…',
     updateAvailable: 'Dostępna aktualizacja',
     offlineSetupFailed: 'Konfiguracja offline nie powiodła się'

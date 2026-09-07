@@ -40,11 +40,30 @@ Automated WebKit emulation (Playwright) covers layout and basic flows but cannot
 - [ ] Switch apps and return — session state is understandable
 - [ ] Incoming call / audio interruption — app recovers or fails gracefully
 
+## Guided ambient audio
+
+- [ ] Guided overview distinguishes app-shell offline readiness from ambient-audio readiness
+- [ ] Ambient enabled and cue sound disabled — only the rest soundscape plays
+- [ ] Cue sound enabled and ambient disabled — phase cues play and rest remains silent
+- [ ] Ambient and cue volume controls affect only their own channels
+- [ ] Rest now starts one ambient player with a soft fade and no duplicate playback
+- [ ] Pause fades/stops ambient; explicit Resume restarts it without losing session position
+- [ ] Return, immediate Stop, and completion silence ambient predictably
+- [ ] Airplane-mode launch plays cached ambient when marked ready, otherwise explains silent fallback
+- [ ] Hardware silent switch, low/medium/high device volume, speaker, and Bluetooth behavior recorded
+- [ ] Locking and app switching pause both session and ambient; no locked-screen playback is promised
+
 ## Accessibility spot checks
 
 - [ ] VoiceOver can complete a short session without countdown spam
 - [ ] Primary controls have adequate touch targets (44×44 pt)
 - [ ] Emergency Stop reachable without scrolling in portrait
+- [ ] Guided Stop, Rest now, and Pause remain above the Home indicator and reachable with one hand
+- [ ] Guided controls remain reachable in landscape and with larger Dynamic Type
+- [ ] Dim view hides visual timing while stage prompts, phase labels, and VoiceOver guidance remain available
+- [ ] Session options disclosure, switches, and sliders have clear VoiceOver names and states
+- [ ] Guided completion is already present in History before reflection is saved or skipped
+- [ ] Optional reflection remains on-device and is readable in History after relaunch
 
 ## Sign-off
 

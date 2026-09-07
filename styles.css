@@ -39,6 +39,13 @@ body {
   overflow-x: hidden;
 }
 
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -183,6 +190,25 @@ body {
 
 .list-main {
   padding-top: 0.25rem;
+}
+
+.guided-list-section {
+  margin-bottom: 1rem;
+}
+
+.list-section-heading {
+  margin: 0 0 0.4rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.techniques-heading {
+  margin-top: 1.25rem;
+}
+
+.guided-session-card {
+  border-color: rgba(125, 211, 192, 0.3);
+  background: rgba(125, 211, 192, 0.07);
 }
 
 .safety-notice {
@@ -333,6 +359,92 @@ body {
 
 .detail-notes {
   font-style: italic;
+}
+
+/* Guided session overview */
+.guided-main {
+  gap: 1.1rem;
+}
+
+.guided-stage-list {
+  margin: 0;
+  padding-left: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.guided-stage-list li {
+  padding-left: 0.25rem;
+}
+
+.guided-stage-name {
+  display: block;
+  font-weight: 600;
+}
+
+.guided-stage-detail,
+.guided-posture,
+.guided-editorial-note {
+  margin: 0.15rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.guided-editorial-note {
+  font-size: 0.8rem;
+}
+
+.guided-audio-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 0.9rem 1rem;
+  background: rgba(125, 211, 192, 0.06);
+  border: 1px solid rgba(125, 211, 192, 0.2);
+  border-radius: var(--radius);
+}
+
+.guided-audio-status,
+.guided-media-status {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.guided-options {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.guided-options summary {
+  min-height: var(--touch-min);
+  padding: 0.8rem 1rem;
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.guided-options-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0 1rem 1rem;
+}
+
+.guided-pace-description {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.guided-media-status {
+  margin-top: 0.8rem;
+  color: #fbbf24;
 }
 
 /* Duration screen */
@@ -554,11 +666,113 @@ body {
   position: relative;
 }
 
+.exercise-main.guided-mode {
+  justify-content: flex-start;
+  padding-top: clamp(2rem, 12vh, 7rem);
+  padding-bottom: calc(max(env(safe-area-inset-bottom), 0.75rem) + 4.75rem);
+}
+
 .session-left {
   font-size: 0.9rem;
   color: var(--text-muted);
   margin-bottom: 0.5rem;
   font-variant-numeric: tabular-nums;
+}
+
+.guided-stage-content {
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+}
+
+.guided-stage-position {
+  margin: 0 0 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.guided-stage-title {
+  margin: 0;
+  font-size: clamp(1.7rem, 8vw, 2.35rem);
+  font-weight: 500;
+}
+
+.guided-stage-prompt {
+  margin: 1rem auto 0;
+  max-width: 32ch;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.guided-mode .circle-wrap {
+  width: min(60vw, 40dvh, 270px);
+  height: min(60vw, 40dvh, 270px);
+  margin-top: 1.25rem;
+}
+
+.guided-mode.dim-view .session-left,
+.guided-mode.dim-view .countdown,
+.guided-mode.dim-view .next-phase-hint {
+  visibility: hidden;
+}
+
+.guided-control-bar {
+  position: fixed;
+  z-index: 20;
+  left: 50%;
+  right: auto;
+  bottom: 0;
+  width: min(100%, var(--content-max));
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: minmax(72px, auto) 1fr minmax(72px, auto);
+  gap: 0.5rem;
+  padding: 0.5rem max(1rem, env(safe-area-inset-right));
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-bottom: max(env(safe-area-inset-bottom), 0.75rem);
+  background: linear-gradient(to top, var(--bg) 75%, rgba(10, 10, 10, 0));
+}
+
+.guided-control-bar .btn {
+  min-height: var(--touch-min);
+  padding: 0.65rem 0.8rem;
+}
+
+.guided-stop {
+  background: transparent;
+  border: 1px solid rgba(255, 107, 107, 0.55);
+  color: #ff6b6b;
+  font-weight: 700;
+}
+
+.guided-pause {
+  grid-column: 3;
+}
+
+.screen.guided-session-active .exercise-header .emergency-stop-btn,
+.screen.guided-session-active .exercise-header .pause-btn {
+  display: none;
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  .exercise-main.guided-mode {
+    padding-top: 0.5rem;
+  }
+
+  .guided-stage-title {
+    font-size: 1.75rem;
+  }
+
+  .guided-stage-prompt {
+    margin-top: 0.4rem;
+    line-height: 1.35;
+  }
+
+  .guided-mode .circle-wrap {
+    width: min(60vw, 32dvh, 160px);
+    height: min(60vw, 32dvh, 160px);
+    margin-top: 0.5rem;
+  }
 }
 
 .circle-wrap {
@@ -988,6 +1202,18 @@ body {
 
 body.has-update-banner {
   padding-top: var(--update-banner-offset, 5.5rem);
+}
+
+body.session-screen-active.has-update-banner {
+  padding-top: 0;
+}
+
+body.session-screen-active #update-banner {
+  display: none;
+}
+
+body.non-list-screen-active #install-hint {
+  display: none;
 }
 
 .update-banner p {
