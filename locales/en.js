@@ -15,7 +15,8 @@ var I18N_EN = {
   },
   list: {
     intro:
-      'Choose a guided breathing technique. Each session includes timing cues you can follow with eyes closed.',
+      'Choose a breathing technique. Each session includes timing cues you can follow with eyes closed.',
+    techniquesHeading: 'Techniques',
     continueLast: 'Continue with last settings',
     history: 'History',
     settings: 'Settings',
@@ -25,6 +26,79 @@ var I18N_EN = {
     filterTechniques: 'Filter techniques',
     filterGoal: 'Filter by goal',
     filterIntensity: 'Filter by intensity'
+  },
+  guided: {
+    listHeading: 'Guided sessions',
+    listIntro: 'Settle in and follow a complete practice from arrival to rest.',
+    backAria: 'Back to guided sessions',
+    detailsAria: 'Guided session details',
+    stageOverview: 'Stage overview',
+    posture:
+      'Sit or lie down somewhere comfortable. Keep every breath easy and return to natural breathing whenever you wish.',
+    audioHeading: 'Ambient sound',
+    ambientEnabled: 'Play ambient sound during rest',
+    ambientVolume: 'Ambient volume',
+    ambientOff: 'Ambient sound is off. The complete session remains available in silence.',
+    ambientReadyOffline: 'Ambient sound is ready offline on this device.',
+    ambientPreparingOffline:
+      'Ambient sound is available online and is being prepared for offline use.',
+    ambientUnavailableOffline:
+      'Ambient sound is not available offline. The session will continue in silence.',
+    ambientPlaybackFailed:
+      'Ambient sound could not play. The session is continuing with text and silence.',
+    optionsHeading: 'Session options',
+    paceComfortable: 'Comfortable',
+    paceDescription: '{pace} pace: {inhale}s inhale · {exhale}s exhale',
+    dimView: 'Dim view — hide numeric timing',
+    soundCues: 'Phase-change sound cues',
+    haptics: 'Phase-change vibration',
+    cueVolume: 'Cue volume',
+    editorialNote:
+      'This sequence is an editorial wellness practice, not medical treatment or a reproduction of a class.',
+    start: 'Start guided session',
+    restNow: 'Rest now',
+    pause: 'Pause',
+    controlsAria: 'Guided session controls',
+    stageOf: 'Stage {current} of {total}',
+    stageStarted: '{stage}. {prompt}',
+    savedAutomatically: 'Guided session complete and saved.',
+    reflectionLabel: 'Optional reflection — saved only on this device',
+    reflectionPlaceholder: 'What do you notice now?',
+    saveReflection: 'Save reflection',
+    sessionType: 'Guided session',
+    naturalBreathing: 'Natural breathing',
+    cueAvailability: 'Optional ambient sound and phase cues',
+    noHolds: 'No holds',
+    unpacedRest: 'Natural-breath rest',
+    unwind: {
+      title: 'Unwind with sound',
+      description:
+        'A gentle practice with time to arrive, breathe steadily, rest with natural breathing, and return.',
+      duration: 'About 15 min'
+    },
+    stages: {
+      arrive: {
+        title: 'Arrive',
+        duration: 'About 2 min',
+        prompt:
+          'Find a comfortable position. Let your shoulders soften and notice the support beneath you.'
+      },
+      breathe: {
+        title: 'Breathe',
+        duration: 'About 5 min',
+        prompt: 'Follow the easy, even rhythm. Comfort matters more than precision.'
+      },
+      rest: {
+        title: 'Listen and rest',
+        duration: 'About 7 min',
+        prompt: 'Let go of the count. Breathe naturally with the optional ambient sound, or in silence.'
+      },
+      return: {
+        title: 'Return',
+        duration: 'About 1 min',
+        prompt: 'Notice the room around you. Move gently and return at your own pace.'
+      }
+    }
   },
   goal: {
     all: 'All',
@@ -127,6 +201,7 @@ var I18N_EN = {
     backToList: 'Back to list',
     elapsed: 'Elapsed',
     technique: 'Technique',
+    session: 'Session',
     rounds: 'Rounds',
     cycles: 'Cycles'
   },
@@ -169,6 +244,7 @@ var I18N_EN = {
     serviceWorker: 'Service worker',
     wakeLock: 'Wake lock',
     audio: 'Audio',
+    ambientAudio: 'Ambient audio',
     lastError: 'Last error',
     yes: 'Yes',
     no: 'No',
@@ -182,6 +258,7 @@ var I18N_EN = {
     installed: 'Installed',
     offlineNow: 'Offline now',
     readyOffline: 'Ready offline',
+    ambientReadyOffline: 'Ambient ready offline',
     preparingOffline: 'Preparing offline…',
     updateAvailable: 'Update available',
     offlineSetupFailed: 'Offline setup failed'

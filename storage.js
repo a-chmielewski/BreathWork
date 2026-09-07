@@ -22,9 +22,14 @@
     lastTechId: null,
     lastMins: null,
     lastRounds: null,
+    lastSessionType: 'technique',
+    lastGuidedSessionId: null,
     sound: false,
     haptics: false,
     volume: 70,
+    ambientEnabled: true,
+    ambientVolume: 45,
+    guidedDimView: false,
     showCountdown: true,
     theme: 'system',
     locale: null,
@@ -74,8 +79,16 @@
     prefs.volume = Math.max(0, Math.min(100, parseInt(prefs.volume, 10) || 70));
     prefs.sound = !!prefs.sound;
     prefs.haptics = !!prefs.haptics;
+    prefs.ambientEnabled = prefs.ambientEnabled !== false;
+    prefs.guidedDimView = prefs.guidedDimView === true;
+    var ambientVolume = parseInt(prefs.ambientVolume, 10);
+    prefs.ambientVolume = Number.isFinite(ambientVolume)
+      ? Math.max(0, Math.min(100, ambientVolume))
+      : 45;
     prefs.showCountdown = prefs.showCountdown !== false;
     prefs.onboardingDismissed = !!prefs.onboardingDismissed;
+    if (prefs.lastSessionType !== 'guided') prefs.lastSessionType = 'technique';
+    if (typeof prefs.lastGuidedSessionId !== 'string') prefs.lastGuidedSessionId = null;
     if (!Array.isArray(prefs.favorites)) prefs.favorites = [];
     prefs.favorites = prefs.favorites.filter(function (id) {
       return typeof id === 'string' && id.length > 0;
@@ -143,6 +156,17 @@
 
   function addHistoryEntry(entry) {
     var list = getHistory();
+    if (
+      entry &&
+      entry.completionId &&
+      list.some(function (existingEntry) {
+        return existingEntry.completionId === entry.completionId;
+      })
+    ) {
+      return list.find(function (existingEntry) {
+        return existingEntry.completionId === entry.completionId;
+      });
+    }
     var record = Object.assign(
       {
         id: 'h_' + Date.now(),
@@ -154,6 +178,19 @@
     list.unshift(record);
     saveHistory(list);
     return record;
+  }
+
+  function saveGuidedReflection(completionId, reflection) {
+    if (typeof completionId !== 'string' || !completionId) return false;
+    var list = getHistory();
+    var matchingEntry = list.find(function (entry) {
+      return entry.completionId === completionId && entry.sessionType === 'guided';
+    });
+    if (!matchingEntry) return false;
+    var normalizedReflection = typeof reflection === 'string' ? reflection.trim().slice(0, 200) : '';
+    if (normalizedReflection) matchingEntry.reflection = normalizedReflection;
+    else delete matchingEntry.reflection;
+    return saveHistory(list);
   }
 
   function clearHistory() {
@@ -220,6 +257,7 @@
     savePrefs: savePrefs,
     getHistory: getHistory,
     addHistoryEntry: addHistoryEntry,
+    saveGuidedReflection: saveGuidedReflection,
     clearHistory: clearHistory,
     exportHistory: exportHistory,
     toggleFavorite: toggleFavorite,

@@ -40,11 +40,17 @@
       </div>
     </header>
     <main class="main list-main">
-      <p class="section-intro" data-i18n="list.intro">Choose a guided breathing technique. Each session includes timing cues you can follow with eyes closed.</p>
+      <section class="guided-list-section" aria-labelledby="guided-list-heading">
+        <h2 id="guided-list-heading" class="list-section-heading" data-i18n="guided.listHeading">Guided sessions</h2>
+        <p class="section-intro" data-i18n="guided.listIntro">Settle in and follow a complete practice from arrival to rest.</p>
+        <ul id="guided-session-list" class="technique-list" role="list"></ul>
+      </section>
       <button type="button" class="continue-card hidden" id="continue-last-btn">
         <span class="continue-card-label" data-i18n="list.continueLast">Continue with last settings</span>
         <span class="continue-card-detail" id="continue-last-detail"></span>
       </button>
+      <h2 class="list-section-heading techniques-heading" data-i18n="list.techniquesHeading">Techniques</h2>
+      <p class="section-intro" data-i18n="list.intro">Choose a breathing technique. Each session includes timing cues you can follow with eyes closed.</p>
       <div class="filter-bar" role="toolbar" data-i18n-aria="aria-label:list.filterTechniques">
         <div id="goal-filters" class="filter-chips" data-i18n-aria="aria-label:list.filterGoal"></div>
         <div id="intensity-filters" class="filter-chips" data-i18n-aria="aria-label:list.filterIntensity"></div>
@@ -55,6 +61,62 @@
       </aside>
       <ul id="technique-list" class="technique-list" role="list"></ul>
       <p id="app-status-text" class="app-status-text"></p>
+    </main>
+  </div>
+
+  <div id="screen-guided" class="screen" data-screen="guided" aria-hidden="true" inert>
+    <header class="header">
+      <button type="button" class="back-btn" id="guided-back" data-i18n-aria="aria-label:guided.backAria">←</button>
+      <h1 id="guided-title" data-i18n="guided.unwind.title">Unwind with sound</h1>
+    </header>
+    <main class="main guided-main">
+      <p id="guided-description" class="section-intro"></p>
+      <div id="guided-meta" class="meta-chips" data-i18n-aria="aria-label:guided.detailsAria"></div>
+      <section class="detail-section" aria-labelledby="guided-stages-heading">
+        <h2 id="guided-stages-heading" class="detail-heading" data-i18n="guided.stageOverview">Stage overview</h2>
+        <ol id="guided-stage-list" class="guided-stage-list"></ol>
+      </section>
+      <p class="guided-posture" data-i18n="guided.posture">Sit or lie down somewhere comfortable. Keep every breath easy and return to natural breathing whenever you wish.</p>
+      <section class="guided-audio-controls" aria-labelledby="guided-audio-heading">
+        <h2 id="guided-audio-heading" class="detail-heading" data-i18n="guided.audioHeading">Ambient sound</h2>
+        <label class="switch-toggle">
+          <input type="checkbox" id="guided-ambient-enabled" role="switch" />
+          <span class="switch-track" aria-hidden="true"></span>
+          <span class="switch-label" data-i18n="guided.ambientEnabled">Play ambient sound during rest</span>
+        </label>
+        <div class="volume-control">
+          <label class="volume-label" for="guided-ambient-volume" data-i18n="guided.ambientVolume">Ambient volume</label>
+          <input type="range" id="guided-ambient-volume" min="0" max="100" value="45" aria-valuemin="0" aria-valuemax="100" aria-valuenow="45" />
+        </div>
+        <p id="guided-audio-status" class="guided-audio-status" role="status"></p>
+      </section>
+      <details class="guided-options" id="guided-options">
+        <summary data-i18n="guided.optionsHeading">Session options</summary>
+        <div class="guided-options-content">
+          <p id="guided-pace-description" class="guided-pace-description"></p>
+          <label class="switch-toggle">
+            <input type="checkbox" id="guided-dim-view" role="switch" />
+            <span class="switch-track" aria-hidden="true"></span>
+            <span class="switch-label" data-i18n="guided.dimView">Dim view — hide numeric timing</span>
+          </label>
+          <label class="switch-toggle">
+            <input type="checkbox" id="guided-sound-cues" role="switch" />
+            <span class="switch-track" aria-hidden="true"></span>
+            <span class="switch-label" data-i18n="guided.soundCues">Phase-change sound cues</span>
+          </label>
+          <label class="switch-toggle">
+            <input type="checkbox" id="guided-haptics" role="switch" />
+            <span class="switch-track" aria-hidden="true"></span>
+            <span class="switch-label" data-i18n="guided.haptics">Phase-change vibration</span>
+          </label>
+          <div class="volume-control">
+            <label class="volume-label" for="guided-cue-volume" data-i18n="guided.cueVolume">Cue volume</label>
+            <input type="range" id="guided-cue-volume" min="0" max="100" value="70" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70" />
+          </div>
+        </div>
+      </details>
+      <p class="guided-editorial-note" data-i18n="guided.editorialNote">This sequence is an editorial wellness practice, not medical treatment or a reproduction of a class.</p>
+      <button type="button" class="btn btn-primary" id="guided-start" data-i18n="guided.start">Start guided session</button>
     </main>
   </div>
 
@@ -138,6 +200,12 @@
     </header>
     <main class="main exercise-main">
       <div id="exercise-session-left" class="session-left"></div>
+      <section id="guided-stage-content" class="guided-stage-content hidden" aria-labelledby="guided-stage-title">
+        <p id="guided-stage-position" class="guided-stage-position"></p>
+        <h2 id="guided-stage-title" class="guided-stage-title"></h2>
+        <p id="guided-stage-prompt" class="guided-stage-prompt"></p>
+        <p id="guided-media-status" class="guided-media-status hidden" role="status"></p>
+      </section>
       <div class="circle-wrap" id="circle-wrap">
         <div class="breath-orb" id="breath-orb" aria-hidden="true"></div>
         <svg class="circle-svg" viewBox="0 0 120 120" aria-hidden="true">
@@ -164,6 +232,11 @@
         <p id="exercise-paused-message" data-i18n="exercise.paused">Paused</p>
         <button type="button" class="btn btn-primary" id="exercise-resume" data-i18n="exercise.resume">Resume</button>
         <button type="button" class="btn btn-secondary" id="exercise-end-session" data-i18n="exercise.endSession">End session</button>
+      </div>
+      <div id="guided-control-bar" class="guided-control-bar hidden" role="group" data-i18n-aria="aria-label:guided.controlsAria">
+        <button type="button" class="btn guided-stop" id="guided-stop" data-i18n="exercise.stop" data-i18n-aria="aria-label:exercise.stopAria">Stop</button>
+        <button type="button" class="btn btn-secondary guided-rest-now hidden" id="guided-rest-now" data-i18n="guided.restNow">Rest now</button>
+        <button type="button" class="btn btn-secondary guided-pause" id="guided-pause" data-i18n="guided.pause" data-i18n-aria="aria-label:exercise.pauseAria">Pause</button>
       </div>
     </main>
   </div>
@@ -271,6 +344,7 @@
   </div>
 
   <script src="version.js"></script>
+  <script src="offline-assets.js"></script>
   <script src="logger.js"></script>
   <script src="storage.js"></script>
   <script src="locales/en.js"></script>
@@ -279,7 +353,10 @@
   <script src="techniques.js"></script>
   <script src="safety.js"></script>
   <script src="session-engine.js"></script>
+  <script src="guided-sessions.js"></script>
+  <script src="guided-session-engine.js"></script>
   <script src="audio-cues.js"></script>
+  <script src="session-media.js"></script>
   <script src="navigation.js"></script>
   <script src="app.js"></script>
   <script src="pwa.js"></script>

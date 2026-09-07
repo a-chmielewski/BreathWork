@@ -14,6 +14,10 @@ module.exports = [
         TECHNIQUES: 'readonly',
         SAFETY: 'readonly',
         SessionEngine: 'readonly',
+        GuidedSessions: 'readonly',
+        GuidedSessionEngine: 'readonly',
+        SessionMedia: 'readonly',
+        OfflineAssets: 'readonly',
         AudioCues: 'readonly',
         AppNavigation: 'readonly',
         AppStorage: 'readonly',
@@ -36,6 +40,10 @@ module.exports = [
     files: [
       'audio-cues.js',
       'session-engine.js',
+      'guided-sessions.js',
+      'guided-session-engine.js',
+      'session-media.js',
+      'offline-assets.js',
       'techniques.js',
       'version.js',
       'storage.js',
@@ -62,7 +70,8 @@ module.exports = [
     languageOptions: {
       globals: {
         ...globals.serviceworker,
-        APP_VERSION: 'writable'
+        APP_VERSION: 'writable',
+        OfflineAssets: 'readonly'
       }
     }
   }
